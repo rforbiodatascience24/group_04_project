@@ -1,0 +1,152 @@
+---
+title: "Augment of data"
+format: html
+editor: visual
+---
+
+A cornerstone analysis of the data relies on the `DESeq2` package. The data has certain requirements for the analysis to be performed: 1. The count matrix: The sample names need to be in the columns and the genes in the rows as `colnames` and `rownames`. 2. The sample data: The sample names need to be in the rows as `rownames` and the additional data is passed in columns.
+
+So we need to augment the data, so it will be ready for the analysis.
+
+## Load of packages
+
+```{r}
+library("tidyverse")
+```
+
+Load of count data
+
+```{r}
+count_data <- read_tsv(file = "data/01_cleaned_count_data.tsv")
+```
+
+Firstly, we need to map the identifier in the `GeneID` variable with a proper gene name. The GeneID is an EntrezID, so we need to convert the EntrezID into a proper gene name, so that the analyses make biological sense to us.
+
+For that we need to load the package `org.Hs.eg.db` from which we can establish a dataframe and join this with our `count_data` to get proper gene names. Importantly the `org.Hs.eg.db` has several conflicts with `dplyr`, for example the `select` function.
+
+```{r}
+library("org.Hs.eg.db")
+```
+
+We notice that the `GeneID` variable is numeric, whereas it should be a character, so we convert it accordingly.
+
+```{r}
+count_data <- count_data |> 
+  mutate(GeneID = as.character(GeneID))
+```
+
+### Creating dataframe with gene symbols mapping to the ENTREZ IDs we have in the `count_data`
+
+To do this we rely on the `mapIds` function from the `AnnotationDbi` package, which takes several arguments: `x` - our genome of interest - here the human genome. `keys` = the variable/column that we want converted - here the `GeneID` variable. `keytype` = The value of the variable in which it exists in our dataframe. Here we have ENTREZIDs, so we put "ENTREZID". `column` = The value that we want our keytype to be converted to. We want "SYMBOL" as this contains the gene name.
+
+```{r}
+symbols <- mapIds(x = org.Hs.eg.db, 
+                  keys = count_data$GeneID, 
+                  keytype = "ENTREZID", 
+                  column = "SYMBOL")
+```
+
+We get a named vector, but want it to be a dataframe for joining
+
+```{r}
+symbols_df <- data.frame(symbols)
+```
+
+As we want to join the rownames in `symbols_df` with `GeneID` in `count_data` we need to extract the rownames from `symbols_df` and make it a variable termed `GeneID`.
+
+```{r}
+rownames <- symbols_df$symbols
+
+count_data <- count_data |> 
+  mutate(gene = rownames) |> 
+  relocate(.after = GeneID)
+```
+
+We make a dataframe termed `conversion_check` which includes `GeneID` and `gene` and we use this to manually check the EntrezID of some genes
+
+```{r}
+conversion_check <- count_data |> 
+  dplyr::select(GeneID, gene)
+
+View(conversion_check)
+```
+
+We check the number of ENTREZIDs that were not converted above and thus are `NA` in the `gene`variable.
+
+```{r}
+sum(is.na(count_data$gene))
+```
+
+So of the `nrow(count_data)` rows in our `count_data`, `sum(is.na(count_data$gene))` are not converted to a gene symbol.
+As these could corrupt our later analysis we chose to remove observations - e.g. gene names that have `NA` in their `gene`
+
+```{r}
+count_data <- count_data |> 
+  drop_na(gene)
+```
+
+Next thing is to remove `GeneID` and provide `gene` as rownames for the `DESeq2` package to work.
+```{r}
+count_data <- count_data |> 
+  dplyr::select(-GeneID)
+
+```
+
+We can use the `rownames_to_column` function, but check for duplicates in the `gene` column as we cannot make the function work if there are duplicates.
+So we check the `sum` of all duplicated genes and find that there is `sum(duplicated(count_data$gene))` duplicate gene.
+
+We find the name of the duplicate gene by the code below:
+```{r}
+duplicate_gene <- count_data |> 
+  filter(duplicated(x = count_data$gene)) |> 
+  dplyr::select(gene)
+
+duplicate_gene
+```
+
+
+
+And we check the counts for the two hits of the gene `TRNAV-CAC`. 
+```{r}
+trnav_cac <- count_data |> 
+  filter(gene == "TRNAV-CAC")
+
+trnav_cac
+```
+
+
+
+We decide to use the mean of the counts as the amount of counts so we use `colMeans` for that calculation but need to select for numeric variables only first and as DESeq2 only operates with integers we use `round`. 
+```{r}
+trnav_cac_mean <- trnav_cac |> 
+  dplyr::select(where(is.numeric)) |> 
+  colMeans() |> 
+  round(digits = 0) 
+```
+We deselect all obsevations from the gene "TRNAV-CAC" as we now want to bind our vector of calculated means to the `count_data`
+```{r}
+count_data <- count_data |> 
+  filter(!gene == "TRNAV-CAC")
+```
+
+However we cannot bind the vector `trnav_cac_mean` to the `count_data` directly, as the vector does not contain the `gene` variable. 
+This needs to be solved. If not we should continue with our analysis without this one gene "TRNAV-CAC". 
+
+Now we add the variable `gene` as column names using the `column_to_rownames` function. 
+```{r}
+count_data <- count_data |> 
+  column_to_rownames(var = "gene")
+```
+
+Now the data is in the correct format for the `DESeq2` analysis and we save it. 
+Notably, the data is saved as an R-object, as the rownames would otherwise be lost in conversion, which is not desirable when working with `DESeq2`. 
+
+```{r}
+write_rds(x = count_data, file = "data/02_count_data_augments.Rdata")
+```
+
+
+
+
+
+

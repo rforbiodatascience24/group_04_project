@@ -1,0 +1,129 @@
+---
+title: "Loading of data from GSE114922"
+author: "Group 04"
+format: html
+editor: visual
+---
+
+This script describes the loading of data from the project "*RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells from patients with myelodysplastic syndrome and healthy controls*", identifer GSE114922.
+
+Data are found at the Gene Expression Omnibus server [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114922).
+
+For analysis of data we need to load both the meta data containing sample data and the count data in a matrix form.
+
+packages
+
+```{r}
+library(tidyverse)
+```
+
+Loading of sample meta data
+
+```{r}
+meta_data <- read_tsv(file = "data/raw_data/GSE114922_family.soft.gz")
+```
+
+Next we need to extract the necessary sample data from this one column table. These are:
+
+`title`, `accession`, `source`, `diagnosis`, `id`, `sample`, `sf3b1`, `zrsr2`, `srsf2`, `u2af1`, `genome`
+
+```{r}
+title <- meta_data |> 
+filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_title =") == TRUE) |> 
+  rename("title" = `^DATABASE = GeoMiame`)
+
+accession <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_geo_accession") == TRUE) |> 
+  rename("accession" = `^DATABASE = GeoMiame`)
+
+source <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_source_name_ch1") == TRUE) |> 
+  rename("source" = `^DATABASE = GeoMiame`)
+
+diagnosis <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "disease status") == TRUE) |> 
+  rename("diagnosis" = `^DATABASE = GeoMiame`)
+
+id <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "patient id") == TRUE) |> 
+  rename("id" = `^DATABASE = GeoMiame`)
+
+sample <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "SAMPLE") == TRUE) |> 
+  rename(sample = `^DATABASE = GeoMiame`)
+
+sf3b1 <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "sf3b1")  == TRUE) |> 
+  rename("sf3b1" = `^DATABASE = GeoMiame`)
+
+srsf2 <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "srsf2")  == TRUE) |> 
+  rename("srsf2" = `^DATABASE = GeoMiame`)
+
+genome <- meta_data |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Genome_build") == TRUE) |> 
+  rename("genome" = `^DATABASE = GeoMiame`)
+```
+
+The data are merged into one dataframe termed `sample_data`
+```{r}
+### Merging the clinical data into one file
+sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
+
+```
+
+Removing unneccessary data in each observation with the `str_remove` function. 
+```{r}
+sample_data <- sample_data |> 
+  mutate(title = str_remove(string = title, pattern = "!Sample_title = "),
+         accession = str_remove(string = accession, pattern = "!Sample_geo_accession = "), 
+         source = str_remove(string = source, pattern = "!Sample_source_name_ch1 ="), 
+         diagnosis = str_remove(string = diagnosis, pattern = "!Sample_characteristics_ch1 = disease status: "),
+         id = str_remove(string = id, pattern = "!Sample_characteristics_ch1 = patient id: "), 
+         sample = str_remove(string = sample, pattern = "\\^SAMPLE = "), 
+         sf3b1 = str_remove(string = sf3b1, pattern = "!Sample_characteristics_ch1 = sf3b1 mutational status: "),
+         srsf2 = str_remove(string = srsf2, pattern = "!Sample_characteristics_ch1 = srsf2 mutational status: "), 
+         genome = str_remove(string = genome, pattern = "!Sample_data_processing = Genome_build: "))
+
+```
+
+We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. 
+`Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`. 
+```{r}
+sample_data <- sample_data |> 
+  select(-accession) |> 
+  mutate(cells = case_when(source == " Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
+                           source == " Bone marrow granulocytic precursor" ~ "granulocytic",
+                           source == " Bone marrow erythroid precursor" ~ "erythroid", 
+                           source == " Bone marrow monocytic precursor" ~ "monocytic"),
+         diagnosis = case_when(diagnosis == "Myelodysplastic Syndrome" ~ "MDS", 
+                               TRUE ~ "HD")) |> 
+  select(-source)
+```
+
+
+Saving as tsv-files
+```{r}
+write_tsv(x = sample_data, file = "data/01_cleaned_sample_data.tsv")
+```
+
+
+Clearing memory to contain the count files
+```{r}
+rm(list = ls())
+```
+
+
+
+Loading the count data 
+```{r}
+counts <- read_delim(file = "data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz", delim = "\t")
+
+View(counts)
+```
+
+Upon inspection we find that the data is already tidy so we save it
+```{r}
+write_tsv(x = counts, file = "data/01_cleaned_count_data.tsv")
+```
+
