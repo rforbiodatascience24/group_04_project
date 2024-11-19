@@ -14,14 +14,14 @@ For analysis of data we need to load both the meta data containing sample data a
 packages
 
 ```{r}
-library(tidyverse)
-library(here)
+library("tidyverse")
+library("here")
 ```
 
 Loading of sample meta data
 
 ```{r}
-meta_data <- read_tsv(file = here("data/raw_data/GSE114922_family.soft.gz"))
+meta_data <- read_tsv(file = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE114nnn/GSE114922/soft/GSE114922_family.soft.gz")
 ```
 
 Next we need to extract the necessary sample data from this one column table. These are:
@@ -74,20 +74,19 @@ sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srs
 
 ```
 
-Removing unneccessary data in each observation with the `str_remove` function.
+Removing unnecessary data in each observation with the `str_remove` function.
 
 ```{r}
 sample_data <- sample_data |> 
-  mutate(title = str_remove(string = title, pattern = "!Sample_title = "),
-         accession = str_remove(string = accession, pattern = "!Sample_geo_accession = "), 
-         source = str_remove(string = source, pattern = "!Sample_source_name_ch1 ="), 
-         diagnosis = str_remove(string = diagnosis, pattern = "!Sample_characteristics_ch1 = disease status: "),
-         id = str_remove(string = id, pattern = "!Sample_characteristics_ch1 = patient id: "), 
-         sample = str_remove(string = sample, pattern = "\\^SAMPLE = "), 
-         sf3b1 = str_remove(string = sf3b1, pattern = "!Sample_characteristics_ch1 = sf3b1 mutational status: "),
-         srsf2 = str_remove(string = srsf2, pattern = "!Sample_characteristics_ch1 = srsf2 mutational status: "), 
-         genome = str_remove(string = genome, pattern = "!Sample_data_processing = Genome_build: "))
-
+  mutate(title = str_remove(title,".*= ")) |> 
+  mutate(accession = str_remove(accession,".*= ")) |> 
+  mutate(source = str_remove(source,".*= ")) |> 
+  mutate(sample = str_remove(sample,".*= ")) |> 
+  mutate(diagnosis = str_remove(diagnosis,".*: ")) |>
+  mutate(id = str_remove(id,".*: ")) |>
+  mutate(sf3b1 = str_remove(sf3b1,".*: ")) |>
+  mutate(srsf2 = str_remove(srsf2,".*: ")) |>
+  mutate(genome = str_remove(genome,".*: "))
 ```
 
 We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. `Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`.
