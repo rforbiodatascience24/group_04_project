@@ -15,12 +15,13 @@ packages
 
 ```{r}
 library(tidyverse)
+library(here)
 ```
 
 Loading of sample meta data
 
 ```{r}
-meta_data <- read_tsv(file = "data/raw_data/GSE114922_family.soft.gz")
+meta_data <- read_tsv(file = here("data/raw_data/GSE114922_family.soft.gz"))
 ```
 
 Next we need to extract the necessary sample data from this one column table. These are:
@@ -66,13 +67,15 @@ genome <- meta_data |>
 ```
 
 The data are merged into one dataframe termed `sample_data`
+
 ```{r}
 ### Merging the clinical data into one file
 sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
 
 ```
 
-Removing unneccessary data in each observation with the `str_remove` function. 
+Removing unneccessary data in each observation with the `str_remove` function.
+
 ```{r}
 sample_data <- sample_data |> 
   mutate(title = str_remove(string = title, pattern = "!Sample_title = "),
@@ -87,8 +90,8 @@ sample_data <- sample_data |>
 
 ```
 
-We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. 
-`Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`. 
+We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. `Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`.
+
 ```{r}
 sample_data <- sample_data |> 
   select(-accession) |> 
@@ -101,21 +104,20 @@ sample_data <- sample_data |>
   select(-source)
 ```
 
-
 Saving as tsv-files
+
 ```{r}
 write_tsv(x = sample_data, file = "data/01_cleaned_sample_data.tsv")
 ```
 
-
 Clearing memory to contain the count files
+
 ```{r}
 rm(list = ls())
 ```
 
+Loading the count data
 
-
-Loading the count data 
 ```{r}
 counts <- read_delim(file = "data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz", delim = "\t")
 
@@ -123,7 +125,7 @@ View(counts)
 ```
 
 Upon inspection we find that the data is already tidy so we save it
+
 ```{r}
 write_tsv(x = counts, file = "data/01_cleaned_count_data.tsv")
 ```
-
