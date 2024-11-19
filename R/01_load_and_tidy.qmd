@@ -107,7 +107,7 @@ sample_data <- sample_data |>
 Saving as tsv-files
 
 ```{r}
-write_tsv(x = sample_data, file = "data/01_cleaned_sample_data.tsv")
+write_tsv(x = sample_data, file = here("data/01_cleaned_sample_data.tsv"))
 ```
 
 Clearing memory to contain the count files
@@ -119,7 +119,7 @@ rm(list = ls())
 Loading the count data
 
 ```{r}
-counts <- read_delim(file = "data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz", delim = "\t")
+counts <- read_delim(file = here("data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz"), delim = "\t")
 
 View(counts)
 ```
@@ -127,5 +127,5 @@ View(counts)
 Upon inspection we find that the data is already tidy so we save it
 
 ```{r}
-write_tsv(x = counts, file = "data/01_cleaned_count_data.tsv")
+write_tsv(x = counts, file = here("data/01_cleaned_count_data.tsv"))
 ```
