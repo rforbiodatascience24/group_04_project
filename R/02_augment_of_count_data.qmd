@@ -60,14 +60,7 @@ rownames <- symbols_df$symbols
 
 count_data <- count_data |> 
   mutate(gene = rownames) |> 
-  relocate(.after = GeneID)
-```
-
-We make a dataframe termed `conversion_check` which includes `GeneID` and `gene` and we use this to manually check the EntrezID of some genes
-
-```{r}
-conversion_check <- count_data |> 
-  dplyr::select(GeneID, gene)
+  relocate(gene, .after = GeneID)
 ```
 
 We check the number of ENTREZIDs that were not converted above and thus are `NA` in the `gene`variable.
@@ -125,7 +118,8 @@ We deselect all obsevations from the gene "TRNAV-CAC" as we now want to bind our
 
 ```{r}
 count_data <- count_data |> 
-  filter(!gene == "TRNAV-CAC")
+  filter(!gene == "TRNAV-CAC") |> 
+  rbind(c("TRNAV-CAC", trnav_cac_mean))
 ```
 
 However we cannot bind the vector `trnav_cac_mean` to the `count_data` directly, as the vector does not contain the `gene` variable. This needs to be solved. If not we should continue with our analysis without this one gene "TRNAV-CAC".
