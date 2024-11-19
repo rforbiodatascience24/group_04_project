@@ -1,0 +1,251 @@
+---
+title: "Differential gene expression analysis on hematopoietic stem cells only"
+format: html
+editor: visual
+---
+
+### Load of data and packages
+
+```{r}
+library("DESeq2")
+library("tidyverse")
+library("here")
+library("ggprism")
+library("patchwork")
+library("ggrepel")
+library("broom")
+
+
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
+
+```
+
+The aim of this analysis is to perform DGE analysis on samples that only contain HSC. We found a high variation in the gene expression between the different cell fractions in our first analysis. Now, we want to scope fully on HSC, as these are the biologically most important cells for MDS.
+
+To generate a count matrix with normalized counts we have to apply the DESeq2 analysis on samples that only contain HSC. Hence, we need to filter out data that do not contain `cells == "HSC"`.
+
+We get the sample ID (the one containing GSM....) from the samples that do not contain HSC.
+
+```{r}
+delete_cols <- sample_data |> 
+  filter(!cells == "HSC") |> 
+  select(sample)
+
+delete_samples <- delete_cols$sample
+
+```
+
+And from the `count_data` we deselect these columns, so that we now only have HSC derived samples in the `count_data`.
+
+```{r}
+count_data <- count_data |> 
+  select(-all_of(delete_samples))
+```
+
+We filter for samples that have HSC in the `cells`
+
+```{r}
+sample_data <- sample_data |> 
+  filter(cells == "HSC") 
+```
+
+And convert `count_data` to numeric.
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+```
+
+We then ensure, that the column variable `sample` in `sample_data` will be converted to rownames by the `column_to_rownames` function.
+
+And in the next command we check that they are equal.
+
+```{r}
+sample_data <- sample_data |> 
+  column_to_rownames(var = "sample")
+
+all(rownames(sample_data) == colnames(count_data))
+```
+
+Then we run acquire the DESeq2 object from matrix
+
+```{r}
+dds_object_hsc_only <- DESeqDataSetFromMatrix(countData = count_data, 
+                                              colData = sample_data, 
+                                              design = ~ srsf2 + sf3b1 + diagnosis)
+```
+
+We estimate size factors
+
+```{r}
+dds_object_hsc_only <- estimateSizeFactors(object = dds_object_hsc_only)
+```
+
+And require normalized counts \
+
+```{r}
+norm_counts <- counts(object = dds_object_hsc_only, normalize = TRUE)
+```
+
+Convert to data frame
+
+```{r}
+norm_counts <- data.frame(norm_counts)
+```
+
+Now we have the normalized counts for each sample.
+
+We extract the rownames from the `norm_counts` and use them as values for the new variable `gene` and remove the rownames afterwards.
+
+```{r}
+gene_names <- base::rownames(x = norm_counts)
+
+norm_counts <- norm_counts |> 
+  mutate(gene = gene_names)
+
+base::rownames(norm_counts) <- NULL
+```
+
+Pivoting longer into a new column termed `sample` which contains the sample_id.
+
+```{r}
+counts_long <- norm_counts |> 
+  pivot_longer(cols = contains("GSM"), 
+               names_to = "sample", 
+               values_to = "counts") |> 
+  mutate(counts = round(x = counts, digits = 0))
+```
+
+And we join with sample_data on `sample`, where we firstly need to provide a variable `sample` in the `sample_data`.
+
+```{r}
+sample_id <- rownames(sample_data)
+
+sample_data <- sample_data |> 
+  mutate(sample = sample_id)
+
+base::rownames(sample_data) <- NULL
+```
+
+```{r}
+full_data <- counts_long |> 
+  full_join(sample_data, by = "sample")
+```
+
+# PCA
+
+To make the PCA we need to pivot the data into a wide format
+
+```{r}
+wide_count_data <- full_data |> 
+  pivot_wider(names_from = "gene", values_from = "counts")
+```
+
+And extract and scale the gene counts
+
+```{r}
+count_data_numeric <- wide_count_data |> 
+  select(where(is.numeric)) 
+
+count_data_to_keep <- colSums(x = count_data_numeric) > 10
+
+count_data_numeric <- count_data_numeric[, count_data_to_keep]
+
+count_data_scaled <- count_data_numeric |> 
+  scale() 
+```
+
+Doing the PCA
+
+```{r}
+pca_object <- prcomp(x = count_data_scaled)
+```
+
+Using `augment` in `broom` to get the principal components
+
+```{r}
+augmented <- pca_object |> 
+  augment(wide_count_data)
+```
+
+And then we plot the first two principal components
+
+```{r}
+pca_plot_hsc <- ggplot(data = augmented, 
+                       mapping = aes(x = .fittedPC1, 
+                                     y = .fittedPC2, 
+                                     fill = diagnosis)
+) + 
+  geom_point(alpha = 0.7, 
+             size = 6, 
+             shape = 21, 
+             color = "black") + 
+  labs(title = "PCA using normalized counts from HSC samples only ", 
+       x = "PC1", 
+       y = "PC2", 
+       color = "Diagnosis") + 
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1")
+pca_plot_hsc
+```
+
+As we have no evidence of clustering it is not worthwhile to make a scree plot.
+
+# Differential gene expression analysis using extracted normalized counts
+
+Using a generalized linear model we can model the expression of each `gene` as a dependent on the `diagnosis`. For that we need to apply a model for each gene and thereby we need to make nested dataframe and then map the `lm` function over that one.
+
+We make a nested dataframe where we group on `gene` and then `nest`.
+
+```{r}
+nested_data <- full_data |> 
+  group_by(gene) |> 
+  nest()
+```
+
+Then we apply the lm function on each element
+
+```{r}
+nested_data_model <- nested_data |> 
+  mutate(model_object = map(.x = data, 
+      .f = ~ lm(counts ~ diagnosis, data = .x)))
+```
+
+From this dataframe we now acquire the model objects by applying `tidy` to the variable `model_object` in the dataframe. By including the conf.int = T we get the 95 % confidence intervals.
+
+```{r}
+nested_data_model <- nested_data_model |> 
+  mutate(tidy = map(.x = model_object, 
+                    .f = ~ tidy(.x, conf.int = T)))
+
+
+nested_data_model <-  nested_data_model |> 
+  select(-c(data, model_object, data)) |> 
+           unnest(tidy)
+
+nested_data_model <- nested_data_model |> 
+  filter(!term == "(Intercept)")
+```
+
+We then adjust the p-value using the `padjust`.
+
+```{r}
+data_model <- nested_data_model |> 
+  mutate(padj = p.adjust(p.value),
+         is.signif = case_when(padj < 0.05 ~ "Significant", 
+                               padj >= 0.05 ~ "NS"))
+```
+
+We then plot the 20 most significantly differentially expressed genes.
+
+Making a volcano plot
+
+```{r}
+plot_volcano <- ggplot(data = data_model, 
+                       mapping = aes(x = estimate, 
+                                     y = -log10(padj))) +
+  geom_point()
+
+plot_volcano
+```
