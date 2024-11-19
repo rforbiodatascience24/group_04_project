@@ -26,6 +26,15 @@ count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
 
 To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`
 
+Making the count_data variables numeric.
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+```
+
+Making the DESeq2-object.
+
 ```{r}
 dds_object <- DESeqDataSetFromMatrix(countData = count_data, 
                                      colData = sample_data, 
