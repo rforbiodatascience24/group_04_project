@@ -12,12 +12,13 @@ So we need to augment the data, so it will be ready for the analysis.
 
 ```{r}
 library("tidyverse")
+library("here")
 ```
 
 Load of count data
 
 ```{r}
-count_data <- read_tsv(file = "data/01_cleaned_count_data.tsv")
+count_data <- read_tsv(file = here("data/01_cleaned_count_data.tsv"))
 ```
 
 Firstly, we need to map the identifier in the `GeneID` variable with a proper gene name. The GeneID is an EntrezID, so we need to convert the EntrezID into a proper gene name, so that the analyses make biological sense to us.
@@ -67,8 +68,6 @@ We make a dataframe termed `conversion_check` which includes `GeneID` and `gene`
 ```{r}
 conversion_check <- count_data |> 
   dplyr::select(GeneID, gene)
-
-View(conversion_check)
 ```
 
 We check the number of ENTREZIDs that were not converted above and thus are `NA` in the `gene`variable.
@@ -77,8 +76,7 @@ We check the number of ENTREZIDs that were not converted above and thus are `NA`
 sum(is.na(count_data$gene))
 ```
 
-So of the `nrow(count_data)` rows in our `count_data`, `sum(is.na(count_data$gene))` are not converted to a gene symbol.
-As these could corrupt our later analysis we chose to remove observations - e.g. gene names that have `NA` in their `gene`
+So of the `nrow(count_data)` rows in our `count_data`, `sum(is.na(count_data$gene))` are not converted to a gene symbol. As these could corrupt our later analysis we chose to remove observations - e.g. gene names that have `NA` in their `gene`
 
 ```{r}
 count_data <- count_data |> 
@@ -86,16 +84,17 @@ count_data <- count_data |>
 ```
 
 Next thing is to remove `GeneID` and provide `gene` as rownames for the `DESeq2` package to work.
+
 ```{r}
 count_data <- count_data |> 
   dplyr::select(-GeneID)
 
 ```
 
-We can use the `rownames_to_column` function, but check for duplicates in the `gene` column as we cannot make the function work if there are duplicates.
-So we check the `sum` of all duplicated genes and find that there is `sum(duplicated(count_data$gene))` duplicate gene.
+We can use the `rownames_to_column` function, but check for duplicates in the `gene` column as we cannot make the function work if there are duplicates. So we check the `sum` of all duplicated genes and find that there is `sum(duplicated(count_data$gene))` duplicate gene.
 
 We find the name of the duplicate gene by the code below:
+
 ```{r}
 duplicate_gene <- count_data |> 
   filter(duplicated(x = count_data$gene)) |> 
@@ -104,9 +103,8 @@ duplicate_gene <- count_data |>
 duplicate_gene
 ```
 
+And we check the counts for the two hits of the gene `TRNAV-CAC`.
 
-
-And we check the counts for the two hits of the gene `TRNAV-CAC`. 
 ```{r}
 trnav_cac <- count_data |> 
   filter(gene == "TRNAV-CAC")
@@ -114,39 +112,33 @@ trnav_cac <- count_data |>
 trnav_cac
 ```
 
+We decide to use the mean of the counts as the amount of counts so we use `colMeans` for that calculation but need to select for numeric variables only first and as DESeq2 only operates with integers we use `round`.
 
-
-We decide to use the mean of the counts as the amount of counts so we use `colMeans` for that calculation but need to select for numeric variables only first and as DESeq2 only operates with integers we use `round`. 
 ```{r}
 trnav_cac_mean <- trnav_cac |> 
   dplyr::select(where(is.numeric)) |> 
   colMeans() |> 
   round(digits = 0) 
 ```
+
 We deselect all obsevations from the gene "TRNAV-CAC" as we now want to bind our vector of calculated means to the `count_data`
+
 ```{r}
 count_data <- count_data |> 
   filter(!gene == "TRNAV-CAC")
 ```
 
-However we cannot bind the vector `trnav_cac_mean` to the `count_data` directly, as the vector does not contain the `gene` variable. 
-This needs to be solved. If not we should continue with our analysis without this one gene "TRNAV-CAC". 
+However we cannot bind the vector `trnav_cac_mean` to the `count_data` directly, as the vector does not contain the `gene` variable. This needs to be solved. If not we should continue with our analysis without this one gene "TRNAV-CAC".
 
-Now we add the variable `gene` as column names using the `column_to_rownames` function. 
+Now we add the variable `gene` as column names using the `column_to_rownames` function.
+
 ```{r}
 count_data <- count_data |> 
   column_to_rownames(var = "gene")
 ```
 
-Now the data is in the correct format for the `DESeq2` analysis and we save it. 
-Notably, the data is saved as an R-object, as the rownames would otherwise be lost in conversion, which is not desirable when working with `DESeq2`. 
+Now the data is in the correct format for the `DESeq2` analysis and we save it. Notably, the data is saved as an R-object, as the rownames would otherwise be lost in conversion, which is not desirable when working with `DESeq2`.
 
 ```{r}
-write_rds(x = count_data, file = "data/02_count_data_augments.Rdata")
+write_rds(x = count_data, file = here("data/02_count_data_augments.Rdata"))
 ```
-
-
-
-
-
-
