@@ -27,7 +27,7 @@ Varibles and values in `sample_data` renamed, so they look nicer in tables and p
 
 ```{r}
 sample_data <- sample_data |> 
-  rename("Diagnosis" = "diagnosis"),
+  rename("Diagnosis" = "diagnosis",
          "Cell fraction" = "cells") |> 
   mutate(`Cell fraction` = case_when(`Cell fraction` == "erythroid" ~ "Erythroid",
                                      `Cell fraction` == "granulocytic" ~ "Granulocytic", 
@@ -44,7 +44,7 @@ basic_table <- table1( ~ Diagnosis | `Cell fraction`,
 basic_table
 ```
 
-And a bar plot describing the
+And a bar plot describing the distribution of samples across the different diagnoses.
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
@@ -71,7 +71,7 @@ srsf2_num_plot <- ggplot(data = mds_data,
                                        fill = srsf2)) + 
   geom_bar(color = "black") + 
   theme_prism() +
-  labs(title = "SRSF2 mutations in samples", 
+  labs(title = "SRSF2 mutations in MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
@@ -86,7 +86,7 @@ sf3b1_num_plot <- ggplot(data = mds_data,
                          legend.position = "none") + 
   geom_bar(color = "black") + 
   theme_prism() +
-  labs(title = "SF3B1 mutations in samples", 
+  labs(title = "SF3B1 mutations in  MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
@@ -137,7 +137,7 @@ We find that only a small fraction of samples carry the SRSF2 mutations, whereas
 Read in the `count_data`.
 
 ```{r}
-count_data <- read_tsv(file = "data/03_full_data.tsv")
+count_data <- read_tsv(file = here("data/03_full_data.tsv"))
 ```
 
 To make the PCA we need the data to be in a wide data format, so we use `pivot_wider` for that.
@@ -339,7 +339,7 @@ Two patients with MDS clearly have outliers with a differential gene expression 
 
 # K-means clustering
 
-We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Monocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
+We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Granulocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
 
 Make a vector with the genes of interest
 
@@ -383,7 +383,9 @@ ggplot(data = augmented_data_for_selected_genes,
   scale_color_brewer(palette = "Set1") + 
   labs(title = "Kmeans clustering with K = 4", 
        color = "Cluster number", 
-       subtitle = "Clustering on lineage specific genes")
+       subtitle = "Clustering on lineage specific genes") + 
+  scale_y_log10() +
+  scale_x_log10()
 ```
 
 We clearly see a clustering pattern here, where CD34 is increased in the HSC compartment, whereas HBB is enhanced in the the erythroid conmpartment. The monocytic and granulocytic progenitors express neither.
