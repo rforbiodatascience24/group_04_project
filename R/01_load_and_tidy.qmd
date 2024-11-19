@@ -74,19 +74,19 @@ sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srs
 
 ```
 
-Removing unnecessary data in each observation with the `str_remove` function.
+```{r}
+
+```
+
+Removing unnecessary strings in each observation with the `str_remove` function.
 
 ```{r}
 sample_data <- sample_data |> 
-  mutate(title = str_remove(title,".*= ")) |> 
-  mutate(accession = str_remove(accession,".*= ")) |> 
-  mutate(source = str_remove(source,".*= ")) |> 
-  mutate(sample = str_remove(sample,".*= ")) |> 
-  mutate(diagnosis = str_remove(diagnosis,".*: ")) |>
-  mutate(id = str_remove(id,".*: ")) |>
-  mutate(sf3b1 = str_remove(sf3b1,".*: ")) |>
-  mutate(srsf2 = str_remove(srsf2,".*: ")) |>
-  mutate(genome = str_remove(genome,".*: "))
+  mutate(across(c(title, accession, source, sample),
+                ~str_remove(.x, ".*= ")),
+         across(c(diagnosis, id, sf3b1, srsf2, genome),
+                ~ str_remove(.x, ".*: "))
+  )
 ```
 
 We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. `Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`.
