@@ -21,11 +21,12 @@ Load of count data
 count_data <- read_tsv(file = here("data/01_cleaned_count_data.tsv"))
 ```
 
-Firstly, we need to map the identifier in the `GeneID` variable with a proper gene name. The GeneID is an EntrezID, so we need to convert the EntrezID into a proper gene name, so that the analyses make biological sense to us.
+Firstly, we need to map the identifier in the `GeneID` variable with a proper gene name. The GeneID is an EntrezID, so we need to convert the EntrezID into a proper gene name, so that the analyses make biological sense.
 
-For that we need to load the package `org.Hs.eg.db` from which we can establish a dataframe and join this with our `count_data` to get proper gene names. Importantly the `org.Hs.eg.db` has several conflicts with `dplyr`, for example the `select` function.
+For that we need to load the package `org.Hs.eg.db` from which we can establish a dataframe and join this with our `count_data` to get proper gene names. Importantly, the `org.Hs.eg.db` has several conflicts with `dplyr`, for example the `select` function.
 
 ```{r}
+BiocManager::install("org.Hs.eg.db")
 library("org.Hs.eg.db")
 ```
 
@@ -121,8 +122,6 @@ count_data <- count_data |>
   filter(!gene == "TRNAV-CAC") |> 
   rbind(c("TRNAV-CAC", trnav_cac_mean))
 ```
-
-However we cannot bind the vector `trnav_cac_mean` to the `count_data` directly, as the vector does not contain the `gene` variable. This needs to be solved. If not we should continue with our analysis without this one gene "TRNAV-CAC".
 
 Now we add the variable `gene` as column names using the `column_to_rownames` function.
 
