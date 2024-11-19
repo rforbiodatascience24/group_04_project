@@ -9,20 +9,23 @@ editor: visual
 The RNA counts in our dataframe are not ready for analysis yet, as we have to normalize the counts to account for the difference in sequencing libraries across the different samples. To do this we will make a DESeq2 object and we will then extract the normalized counts which will allow us to continue the work with this.
 
 We load the `DESeq2` package and other packages:
+
 ```{r}
 library("DESeq2")
 library("tidyverse")
+library("here")
 ```
 
-And load data `count_data` which is the count matrix and `sample_data` which is the sample data. 
+And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
+
 ```{r}
-sample_data <- read_tsv(file = "data/01_cleaned_sample_data.tsv")
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
 
-count_data <- read_rds(file = "data/02_count_data_augments.Rdata")
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
 ```
 
-To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. 
-We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`
+To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`
+
 ```{r}
 dds_object <- DESeqDataSetFromMatrix(countData = count_data, 
                                      colData = sample_data, 
@@ -30,40 +33,45 @@ dds_object <- DESeqDataSetFromMatrix(countData = count_data,
 ```
 
 We estimate the normalization factors
+
 ```{r}
 dds_object <- estimateSizeFactors(dds_object)
 
 sizeFactors(dds_object)
 ```
+
 And extract the normalized counts
+
 ```{r}
 normalized_counts <- counts(object = dds_object, 
                             normalized = T)
 ```
 
-The genes are in the rownames, and we want these to be a separate column.
-First we convert from matrix to dataframe. 
+The genes are in the rownames, and we want these to be a separate column. First we convert from matrix to dataframe.
+
 ```{r}
 normalized_counts <- data.frame(normalized_counts)
-````
+```
 
-Extract the rownames that will be used for the new variable `gene`. 
+Extract the rownames that will be used for the new variable `gene`.
+
 ```{r}
 gene_names <- base::rownames(normalized_counts)
 
 ```
 
 Which is made a new variable gene
+
 ```{r}
 normalized_counts <- normalized_counts |> 
   mutate(gene = gene_names)
 ```
 
 For consistency the rownames are removed
+
 ```{r}
 base::rownames(normalized_counts) <- NULL
 ```
-
 
 ```{r}
 counts_long <- normalized_counts |> 
@@ -74,13 +82,14 @@ counts_long <- normalized_counts |>
 ```
 
 And we join on sample
+
 ```{r}
 full_data <- counts_long |> 
   full_join(sample_data, by = "sample")
 ```
 
+Data saved
 
-Data saved 
 ```{r}
-write_tsv(x = full_data, file = "data/03_full_data.tsv")
+write_tsv(x = full_data, file = here("data/03_full_data.tsv"))
 ```
