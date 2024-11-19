@@ -9,9 +9,9 @@ This script describes the loading of data from the project "*RNA sequencing of b
 
 Data are found at the Gene Expression Omnibus server [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114922).
 
-For analysis of data we need to load both the meta data containing sample data and the count data in a matrix form.
+For analysis of data we need to load both the meta data containing sample data and the count data in a matrix form. The count data refers to the number of sequencing reads that were mapped to each gene or transcript in the sample. This means that the counts represent how many times a RNA molecule was sequenced, which can then be used to find out about the relative, and sometimes absolute abundance of this RNA in the sample.
 
-packages
+The packages used for this file:
 
 ```{r}
 library("tidyverse")
@@ -30,39 +30,48 @@ Next we need to extract the necessary sample data from this one column table. Th
 
 ```{r}
 title <- meta_data |> 
-filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_title =") == TRUE) |> 
+filter(str_detect(string = `^DATABASE = GeoMiame`,
+                  pattern = "Sample_title =") == TRUE) |> 
   rename("title" = `^DATABASE = GeoMiame`)
 
 accession <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_geo_accession") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "Sample_geo_accession") == TRUE) |> 
   rename("accession" = `^DATABASE = GeoMiame`)
 
 source <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Sample_source_name_ch1") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "Sample_source_name_ch1") == TRUE) |> 
   rename("source" = `^DATABASE = GeoMiame`)
 
 diagnosis <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "disease status") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "disease status") == TRUE) |> 
   rename("diagnosis" = `^DATABASE = GeoMiame`)
 
 id <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "patient id") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "patient id") == TRUE) |> 
   rename("id" = `^DATABASE = GeoMiame`)
 
 sample <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "SAMPLE") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "SAMPLE") == TRUE) |> 
   rename(sample = `^DATABASE = GeoMiame`)
 
 sf3b1 <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "sf3b1")  == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "sf3b1")  == TRUE) |> 
   rename("sf3b1" = `^DATABASE = GeoMiame`)
 
 srsf2 <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "srsf2")  == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "srsf2")  == TRUE) |> 
   rename("srsf2" = `^DATABASE = GeoMiame`)
 
 genome <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`, pattern = "Genome_build") == TRUE) |> 
+  filter(str_detect(string = `^DATABASE = GeoMiame`,
+                    pattern = "Genome_build") == TRUE) |> 
   rename("genome" = `^DATABASE = GeoMiame`)
 ```
 
@@ -71,11 +80,6 @@ The data are merged into one dataframe termed `sample_data`
 ```{r}
 ### Merging the clinical data into one file
 sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
-
-```
-
-```{r}
-
 ```
 
 Removing unnecessary strings in each observation with the `str_remove` function.
@@ -89,7 +93,7 @@ sample_data <- sample_data |>
   )
 ```
 
-We remove `accession` as this is the same as `sample`and the `source` variable is renamed into `cells`variable with shorter names. `Myelodysplastic syndrome` recoded to `MDS` and `Healthy donor` to `HD`.
+We remove `accession` as this is the same as `sample`. Furthermore, the `source` variable is renamed into `cells`variable with shorter names. `Myelodysplastic syndrome` renamed to `MDS` and `Healthy donor` to `HD`.
 
 ```{r}
 sample_data <- sample_data |> 
@@ -118,7 +122,7 @@ rm(list = ls())
 Loading the count data
 
 ```{r}
-counts <- read_delim(file = here("data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz"), delim = "\t")
+counts <- read_delim(file = "https://www.ncbi.nlm.nih.gov/geo/download/?type=rnaseq_counts&acc=GSE114922&format=file&file=GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz")
 
 View(counts)
 ```
