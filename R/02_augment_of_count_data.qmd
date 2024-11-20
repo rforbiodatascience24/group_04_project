@@ -11,6 +11,13 @@ So we need to augment the data, so it will be ready for the analysis.
 ## Load of packages
 
 ```{r}
+packages <- c("tidyverse", "here", "BiocManager")
+install.packages(setdiff(packages, rownames(installed.packages())))
+
+if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
+  BiocManager::install("org.Hs.eg.db")
+}
+
 library("tidyverse")
 library("here")
 ```
@@ -26,7 +33,6 @@ Firstly, we need to map the identifier in the `GeneID` variable with a proper ge
 For that we need to load the package `org.Hs.eg.db` from which we can establish a dataframe and join this with our `count_data` to get proper gene names. Importantly, the `org.Hs.eg.db` has several conflicts with `dplyr`, for example the `select` function.
 
 ```{r}
-BiocManager::install("org.Hs.eg.db")
 library("org.Hs.eg.db")
 ```
 
