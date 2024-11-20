@@ -31,7 +31,7 @@ Varibles and values in `sample_data` renamed, so they look nicer in tables and p
 
 ```{r}
 sample_data <- sample_data |> 
-  rename("Diagnosis" = "diagnosis",
+  dplyr::rename("Diagnosis" = "diagnosis",
          "Cell fraction" = "cells") |> 
   mutate(`Cell fraction` = case_when(`Cell fraction` == "erythroid" ~ "Erythroid",
                                      `Cell fraction` == "granulocytic" ~ "Granulocytic", 
