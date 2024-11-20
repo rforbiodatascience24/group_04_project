@@ -14,8 +14,13 @@ For analysis of data we need to load both the meta data containing sample data a
 The packages used for this file:
 
 ```{r}
+
+packages <- c("tidyverse", "here")
+install.packages(setdiff(packages, rownames(installed.packages())))  
+
 library("tidyverse")
 library("here")
+
 ```
 
 Loading of sample meta data
@@ -30,7 +35,7 @@ Next we need to extract the necessary sample data from this one column table. Th
 
 ```{r}
 title <- meta_data |> 
-filter(str_detect(string = `^DATABASE = GeoMiame`,
+filter(str_detect(string = `^DATABASE = GeoMiame`, 
                   pattern = "Sample_title =") == TRUE) |> 
   rename("title" = `^DATABASE = GeoMiame`)
 
