@@ -14,7 +14,7 @@ For analysis of data we need to load both the meta data containing sample data a
 The packages used for this file:
 
 ```{r}
-
+rm(list=ls()) # remove all variables in the environment
 packages <- c("tidyverse", "here")
 install.packages(setdiff(packages, rownames(installed.packages())))  
 
