@@ -26,7 +26,16 @@ library("here")
 Loading of sample meta data
 
 ```{r}
-meta_data <- read_tsv(file = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE114nnn/GSE114922/soft/GSE114922_family.soft.gz")
+
+data <- 'data/raw_data/GSE114922_family.soft.gz'
+
+if(file.exists(data)){
+  meta_data <- read_tsv('data/raw_data/GSE114922_family.soft.gz')
+} else {
+  meta_data <- read_tsv(file = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE114nnn/GSE114922/soft/GSE114922_family.soft.gz")
+}
+
+
 ```
 
 Next we need to extract the necessary sample data from this one column table. These are:
@@ -103,10 +112,10 @@ We remove `accession` as this is the same as `sample`. Furthermore, the `source`
 ```{r}
 sample_data <- sample_data |> 
   select(-accession) |> 
-  mutate(cells = case_when(source == " Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
-                           source == " Bone marrow granulocytic precursor" ~ "granulocytic",
-                           source == " Bone marrow erythroid precursor" ~ "erythroid", 
-                           source == " Bone marrow monocytic precursor" ~ "monocytic"),
+  mutate(cells = case_when(source == "Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
+                           source == "Bone marrow granulocytic precursor" ~ "granulocytic",
+                           source == "Bone marrow erythroid precursor" ~ "erythroid", 
+                           source == "Bone marrow monocytic precursor" ~ "monocytic"),
          diagnosis = case_when(diagnosis == "Myelodysplastic Syndrome" ~ "MDS", 
                                TRUE ~ "HD")) |> 
   select(-source)
