@@ -11,6 +11,10 @@ The RNA counts in our dataframe are not ready for analysis yet, as we have to no
 We load the `DESeq2` package and other packages:
 
 ```{r}
+rm(list=ls()) #remove all variables in the environment
+packages <- c("tidyverse", "here", "DESeq2")
+install.packages(setdiff(packages, rownames(installed.packages())))
+
 library("DESeq2")
 library("tidyverse")
 library("here")

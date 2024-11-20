@@ -14,14 +14,32 @@ For analysis of data we need to load both the meta data containing sample data a
 The packages used for this file:
 
 ```{r}
+
+packages <- c("tidyverse", "here")
+install.packages(setdiff(packages, rownames(installed.packages())))  
+
 library("tidyverse")
 library("here")
+
 ```
 
-Loading of sample meta data
+Creating the `data`, and `raw_data` directory, loading of sample meta data if it doesn't exist already.
 
 ```{r}
-meta_data <- read_tsv(file = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE114nnn/GSE114922/soft/GSE114922_family.soft.gz")
+if(!dir.exists("data/raw_data")){
+  dir.create(path = here("data/raw_data"), recursive = TRUE)
+  } 
+  
+data_path <- here('data/raw_data/GSE114922_family.soft.gz')
+
+
+if(file.exists(data_path)){
+  meta_data <- read_tsv(data_path)
+} else {
+  meta_data <- read_tsv(file = "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE114nnn/GSE114922/soft/GSE114922_family.soft.gz")
+  write_tsv(x = meta_data,
+          file = str_c(data_path))
+}
 ```
 
 Next we need to extract the necessary sample data from this one column table. These are:
@@ -30,7 +48,7 @@ Next we need to extract the necessary sample data from this one column table. Th
 
 ```{r}
 title <- meta_data |> 
-filter(str_detect(string = `^DATABASE = GeoMiame`,
+filter(str_detect(string = `^DATABASE = GeoMiame`, 
                   pattern = "Sample_title =") == TRUE) |> 
   rename("title" = `^DATABASE = GeoMiame`)
 
@@ -98,10 +116,10 @@ We remove `accession` as this is the same as `sample`. Furthermore, the `source`
 ```{r}
 sample_data <- sample_data |> 
   select(-accession) |> 
-  mutate(cells = case_when(source == " Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
-                           source == " Bone marrow granulocytic precursor" ~ "granulocytic",
-                           source == " Bone marrow erythroid precursor" ~ "erythroid", 
-                           source == " Bone marrow monocytic precursor" ~ "monocytic"),
+  mutate(cells = case_when(source == "Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
+                           source == "Bone marrow granulocytic precursor" ~ "granulocytic",
+                           source == "Bone marrow erythroid precursor" ~ "erythroid", 
+                           source == "Bone marrow monocytic precursor" ~ "monocytic"),
          diagnosis = case_when(diagnosis == "Myelodysplastic Syndrome" ~ "MDS", 
                                TRUE ~ "HD")) |> 
   select(-source)
@@ -122,7 +140,17 @@ rm(list = ls())
 Loading the count data
 
 ```{r}
-counts <- read_delim(file = "https://www.ncbi.nlm.nih.gov/geo/download/?type=rnaseq_counts&acc=GSE114922&format=file&file=GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz")
+
+data_path_count <- here('data/raw_data/GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz')
+
+
+if(file.exists(data_path_count)){
+  counts <- read_tsv(data_path_count)
+} else {
+  counts <- read_tsv(file = "https://www.ncbi.nlm.nih.gov/geo/download/?type=rnaseq_counts&acc=GSE114922&format=file&file=GSE114922_raw_counts_GRCh38.p13_NCBI.tsv.gz")
+  write_tsv(x = counts,
+          file = str_c(data_path_count))
+}
 
 View(counts)
 ```
