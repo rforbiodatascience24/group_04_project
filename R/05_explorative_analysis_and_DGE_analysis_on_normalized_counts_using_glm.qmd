@@ -29,8 +29,10 @@ We get the sample ID (the one containing GSM....) from the samples that do not c
 
 ```{r}
 delete_cols <- sample_data |> 
-  filter(!cells == "HSC") |> 
-  select(sample)
+  filter(!cells == "HSC") 
+
+delete_cols <- delete_cols |> 
+  dplyr::select(sample)
 
 delete_samples <- delete_cols$sample
 
@@ -40,7 +42,7 @@ And from the `count_data` we deselect these columns, so that we now only have HS
 
 ```{r}
 count_data <- count_data |> 
-  select(-all_of(delete_samples))
+  dplyr::select(-all_of(delete_samples))
 ```
 
 We filter for samples that have HSC in the `cells`
@@ -82,7 +84,7 @@ We estimate size factors
 dds_object_hsc_only <- estimateSizeFactors(object = dds_object_hsc_only)
 ```
 
-And require normalized counts \
+And require normalized counts\
 
 ```{r}
 norm_counts <- counts(object = dds_object_hsc_only, normalize = TRUE)
@@ -146,7 +148,7 @@ And extract and scale the gene counts
 
 ```{r}
 count_data_numeric <- wide_count_data |> 
-  select(where(is.numeric)) 
+  dplyr::select(where(is.numeric)) 
 
 count_data_to_keep <- colSums(x = count_data_numeric) > 10
 
@@ -192,19 +194,141 @@ pca_plot_hsc
 
 As we have no evidence of clustering it is not worthwhile to make a scree plot.
 
-# Differential gene expression analysis using extracted normalized counts
+# Differential gene expression analysis using data from the DESeq2 analysis. 
+
+We run the DESeq function on our deseq_object_hsc_only and then get the estimations using the `results` function.
+
+```{r}
+dds_object_hsc_only <- DESeq(dds_object_hsc_only)
+
+results_hsc_only <- results(object = dds_object_hsc_only, 
+                            contrast = c("diagnosis", "MDS", "HD"), 
+                                         alpha = 0.05)
+```
+
+We convert the results into a dataframe, so that we can work with the coefficients.
+
+```{r}
+hsc_df <- data.frame(results_hsc_only)
+```
+
+And supply the rownames as the variable gene
+
+```{r}
+hsc_df <- hsc_df |> 
+  mutate(gene = rownames(hsc_df))
+```
+
+We use the data from this dataframe to establish a volcano plot where genes with a an adjusted p-value \< 0.000001 have their names displayed.
+
+```{r}
+ggplot(data = hsc_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(0.000001), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = hsc_df |> 
+                     filter(padj < 0.000001
+                            ), 
+                   aes(label = gene), 
+                   max.overlaps = 20000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "Differential gene expression in CD34+ HSC\n between patients with MDS and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.000001\n
+       labelled genes with a significance value below 0.000001")
+```
+
+Looking at tumor microenvironment antigens
+
+```{r}
+tma <- c("CD274", "PDCD1LG2", "IDO1",	"TDO2",	"ARG1",	"ARG2",	"TGFB1",	"CCL22",	"CCL2",	"LGALS3", "LRRC32",	"IL10",	"SIGLEC15",	"BIRC7")
+```
+
+Selecting only these genes from our dataframe
+
+```{r}
+df_tma <- hsc_df |> 
+  filter(gene %in% tma)
+```
+
+Showing how the expression of these genes is comparred to expression of other genes
+
+```{r}
+ggplot(data = hsc_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(0.000001), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = df_tma, aes(label = gene), 
+                   max.overlaps = 10000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "MDS patients vs. healthy donors:\nTumor microenvironment antigens highlighted", 
+       caption = "Red line indicates an adjusted p-value of 0.000001")
+```
+
+Making a volcano plot with the TMA encoding genes only
+
+```{r}
+ggplot(data = df_tma, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_point() +
+  geom_label_repel(aes(label = gene), 
+                   max.overlaps = 100) + 
+  geom_hline(yintercept = -log10(0.05),
+             color = "red") + 
+  theme_prism() +
+  labs(title = "Expression of tumor microenvironment antigens\n in CD34+ HSC from MDS patients and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.05")
+```
+
+# Using the normalized counts to establish a generalized linear model of gene counts 
 
 Using a generalized linear model we can model the expression of each `gene` as a dependent on the `diagnosis`. For that we need to apply a model for each gene and thereby we need to make nested dataframe and then map the `lm` function over that one.
 
 We make a nested dataframe where we group on `gene` and then `nest`.
 
+Getting the sum of counts across each gene by grouping on gene and then getting the names of those genes by filtering and using `pull` to acquire these gene names.
+
+Additionally, we have grouped on the `diagnosis` as we in the analysis below make a regression with the diagnosis as the independent variable. As we don't want the counts to be too low in neither `MDS` nor `HD` we require names for genes with a summed counts below 10 for either MDS or HD.
+
 ```{r}
-nested_data <- full_data |> 
-  group_by(gene) |> 
-  nest()
+counts_per_gene <- full_data |> 
+  mutate(gene = as.factor(gene))
+
+grouped <- counts_per_gene |> 
+  group_by(gene, diagnosis) |> 
+  summarise(sum = sum(counts)) |> 
+  arrange(sum)
+
+grouped_below_10 <- grouped |> 
+  filter(sum < 10)
+
+names_below10 <- pull(.data = grouped_below_10, var = gene)
+
+
 ```
 
-Then we apply the lm function on each element
+We then make a nested dataframe, where we nest on gene and then remove genes that have a total gene count below 10 `names_below10`.
+
+```{r}
+nested_data <- full_data  |> 
+  group_by(gene) |> 
+  nest() |> 
+  filter(!gene %in% names_below10)
+```
+
+We use the `map` function to apply a linear model to the expression level of each gene with `diagnosis` as the independent variable.
 
 ```{r}
 nested_data_model <- nested_data |> 
@@ -212,7 +336,9 @@ nested_data_model <- nested_data |>
       .f = ~ lm(counts ~ diagnosis, data = .x)))
 ```
 
-From this dataframe we now acquire the model objects by applying `tidy` to the variable `model_object` in the dataframe. By including the conf.int = T we get the 95 % confidence intervals.
+From this dataframe we now acquire the model objects by applying `tidy` to the variable `model_object` in the dataframe. By including the `conf.int = T` we get the 95 % confidence intervals.
+
+We deselect data, model_object, and filter away observations with Intercept.
 
 ```{r}
 nested_data_model <- nested_data_model |> 
@@ -221,8 +347,9 @@ nested_data_model <- nested_data_model |>
 
 
 nested_data_model <-  nested_data_model |> 
-  select(-c(data, model_object, data)) |> 
-           unnest(tidy)
+  select(-c(data, model_object)) |> 
+           unnest(tidy) |> 
+  ungroup()
 
 nested_data_model <- nested_data_model |> 
   filter(!term == "(Intercept)")
@@ -233,19 +360,46 @@ We then adjust the p-value using the `padjust`.
 ```{r}
 data_model <- nested_data_model |> 
   mutate(padj = p.adjust(p.value),
-         is.signif = case_when(padj < 0.05 ~ "Significant", 
-                               padj >= 0.05 ~ "NS"))
+         is.signif = case_when(padj < 0.000001 ~ "Significant", 
+                               padj >= 0.000001 ~ "NS"))
 ```
 
-We then plot the 20 most significantly differentially expressed genes.
+As there are so many genes, we only select those that are significantly differentially expressed, where we apply the same level of significance as earlier - p \< 0.00001
+
+```{r}
+sign_genes <- data_model |> 
+  filter(is.signif == "Significant")
+```
+
+```{r}
+ggplot(data = sign_genes, 
+       mapping = aes(x = estimate, 
+                       y = fct_reorder(gene, estimate))) + 
+  geom_point() + 
+  geom_errorbarh(data = sign_genes, 
+                 aes(xmin = conf.low, 
+                 xmax = conf.high)) + 
+  theme_bw() + 
+  labs(y = "Gene name", 
+       x = "Estimate (95 % CI)", 
+       title = "Estimated expression levels of significantly differentially expressed genes by CD34+ HSC from MDS patients vs. healthy donors") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
 Making a volcano plot
 
 ```{r}
-plot_volcano <- ggplot(data = data_model, 
+ggplot(data = data_model, 
                        mapping = aes(x = estimate, 
-                                     y = -log10(padj))) +
-  geom_point()
-
-plot_volcano
+                                     y = -log10(p.value))) +
+  geom_hline(yintercept = -log10(0.000001), color = "red") + 
+  geom_point(alpha = 0.2) +
+  geom_label_repel(data = sign_genes, 
+                   aes(label = gene), 
+                   max.overlaps = Inf) + 
+  labs(title = "Volcano plot of significantly differential expressed genes", 
+         y = "-log10(p.value)", 
+         x = "Estimate", 
+         caption = "Horizontal line at p = 0.0000001") + 
+  theme_prism()
 ```
