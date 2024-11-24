@@ -1,0 +1,70 @@
+---
+title: "Group04_Project_Presentation"
+author: "Tilman Nelissen"
+date: 3 dec 2024
+editor: visual
+format: 
+  revealjs:
+    footer: "R4BDS Group 4 : Analysis of RNA Sequencing"
+    transition: fade
+---
+
+```{r}
+packages <- c("tidyverse", "here", "DESeq2", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "revealjs")
+install.packages(setdiff(packages, rownames(installed.packages())))
+
+if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
+  BiocManager::install("org.Hs.eg.db")
+}
+
+library("org.Hs.eg.db")
+library("tidyverse")
+library("here")
+library("DESeq2")
+library("broom")
+library("table1")
+library("ggprism")
+library("patchwork")
+library("RColorBrewer")
+library("revealjs")
+```
+
+## Introduction
+
+This is some text
+
+## Data Retrieval and Cleaning
+
+This is some text
+
+## Gene Mapping and Cleanup
+
+This is some text
+
+## Data Preparation for DESeq2 Analysis
+
+This is some text
+
+## Transforming and Joining Data
+
+This is some text
+
+## Exploratory Data Analysis
+
+This is some text
+
+## Some Finding 1
+
+This is some text
+
+## Some Finding 2
+
+This is some text
+
+## Some Finding 3
+
+This is some text
+
+## Final Thoughts and Outlook
+
+This is some text
