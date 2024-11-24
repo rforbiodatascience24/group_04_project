@@ -20,7 +20,6 @@ install.packages(setdiff(packages, rownames(installed.packages())))
 
 library("tidyverse")
 library("here")
-
 ```
 
 Creating the `data`, and `raw_data` directory, loading of sample meta data if it doesn't exist already.
