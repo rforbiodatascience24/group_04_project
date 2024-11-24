@@ -9,7 +9,7 @@ This script describes the loading of data from the project "*RNA sequencing of b
 
 Data are found at the Gene Expression Omnibus server [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114922).
 
-For analysis of data we need to load both the meta data containing sample data and the count data in a matrix form. The count data refers to the number of sequencing reads that were mapped to each gene or transcript in the sample. This means that the counts represent how many times a RNA molecule was sequenced, which can then be used to find out about the relative, and sometimes absolute abundance of this RNA in the sample.
+For the analysis of the data we need to load both the meta data containing sample data and the count data in a matrix form. The count data refers to the number of sequencing reads that were mapped to each gene or transcript in the sample. This means that the counts represent how many times a RNA molecule was sequenced, which can then be used to find out about the relative, and sometimes absolute abundance of this RNA in the sample.
 
 The packages used for this file:
 
@@ -52,11 +52,6 @@ filter(str_detect(string = `^DATABASE = GeoMiame`,
                   pattern = "Sample_title =") == TRUE) |> 
   rename("title" = `^DATABASE = GeoMiame`)
 
-accession <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "Sample_geo_accession") == TRUE) |> 
-  rename("accession" = `^DATABASE = GeoMiame`)
-
 source <- meta_data |> 
   filter(str_detect(string = `^DATABASE = GeoMiame`,
                     pattern = "Sample_source_name_ch1") == TRUE) |> 
@@ -97,14 +92,14 @@ The data are merged into one dataframe termed `sample_data`
 
 ```{r}
 ### Merging the clinical data into one file
-sample_data <- cbind(title, accession, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
+sample_data <- cbind(title, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
 ```
 
 Removing unnecessary strings in each observation with the `str_remove` function.
 
 ```{r}
 sample_data <- sample_data |> 
-  mutate(across(c(title, accession, source, sample),
+  mutate(across(c(title, source, sample),
                 ~str_remove(.x, ".*= ")),
          across(c(diagnosis, id, sf3b1, srsf2, genome),
                 ~ str_remove(.x, ".*: "))
@@ -115,7 +110,6 @@ We remove `accession` as this is the same as `sample`. Furthermore, the `source`
 
 ```{r}
 sample_data <- sample_data |> 
-  select(-accession) |> 
   mutate(cells = case_when(source == "Bone marrow CD34+ hematopoietic stem/progenitor cells" ~ "HSC", 
                            source == "Bone marrow granulocytic precursor" ~ "granulocytic",
                            source == "Bone marrow erythroid precursor" ~ "erythroid", 
