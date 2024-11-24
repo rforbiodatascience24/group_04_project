@@ -64,7 +64,8 @@ symbols_df <- data.frame(symbols)
 As we want to join the rownames in `symbols_df` with `GeneID` in `count_data` we need to extract the rownames from `symbols_df` and make it a variable termed `GeneID`.
 
 ```{r}
-rownames <- symbols_df$symbols
+rownames <- symbols_df |>
+  pull(symbols)
 
 count_data <- count_data |> 
   mutate(gene = rownames) |> 
@@ -74,7 +75,10 @@ count_data <- count_data |>
 We check the number of ENTREZIDs that were not converted above and thus are `NA` in the `gene`variable.
 
 ```{r}
-sum(is.na(count_data$gene))
+count_data |>
+  dplyr::select(gene) |>
+  is.na() |>
+  sum()
 ```
 
 So of the `nrow(count_data)` rows in our `count_data`, `sum(is.na(count_data$gene))` are not converted to a gene symbol. As these could corrupt our later analysis we chose to remove observations - e.g. gene names that have `NA` in their `gene`
@@ -98,9 +102,9 @@ We find the name of the duplicate gene by the code below:
 
 ```{r}
 duplicate_gene <- count_data |> 
-  filter(duplicated(x = count_data$gene)) |> 
-  dplyr::select(gene)
-
+  filter(duplicated(gene)) |>
+  pull(gene)
+  
 duplicate_gene
 ```
 
