@@ -25,7 +25,7 @@ library("here")
 Creating the `data`, and `raw_data` directory, loading of sample meta data if it doesn't exist already.
 
 ```{r}
-if(!dir.exists("data/raw_data")){
+if(!dir.exists(here("data/raw_data"))){
   dir.create(path = here("data/raw_data"), recursive = TRUE)
   } 
   
@@ -45,53 +45,29 @@ Next we need to extract the necessary sample data from this one column table. Th
 
 `title`, `accession`, `source`, `diagnosis`, `id`, `sample`, `sf3b1`, `zrsr2`, `srsf2`, `u2af1`, `genome`
 
-```{r}
-title <- meta_data |> 
-filter(str_detect(string = `^DATABASE = GeoMiame`, 
-                  pattern = "Sample_title =") == TRUE) |> 
-  rename("title" = `^DATABASE = GeoMiame`)
-
-source <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "Sample_source_name_ch1") == TRUE) |> 
-  rename("source" = `^DATABASE = GeoMiame`)
-
-diagnosis <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "disease status") == TRUE) |> 
-  rename("diagnosis" = `^DATABASE = GeoMiame`)
-
-id <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "patient id") == TRUE) |> 
-  rename("id" = `^DATABASE = GeoMiame`)
-
-sample <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "SAMPLE") == TRUE) |> 
-  rename(sample = `^DATABASE = GeoMiame`)
-
-sf3b1 <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "sf3b1")  == TRUE) |> 
-  rename("sf3b1" = `^DATABASE = GeoMiame`)
-
-srsf2 <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "srsf2")  == TRUE) |> 
-  rename("srsf2" = `^DATABASE = GeoMiame`)
-
-genome <- meta_data |> 
-  filter(str_detect(string = `^DATABASE = GeoMiame`,
-                    pattern = "Genome_build") == TRUE) |> 
-  rename("genome" = `^DATABASE = GeoMiame`)
-```
-
-The data are merged into one dataframe termed `sample_data`
+The data then is merged into a single dataframe called `sample_data`
 
 ```{r}
-### Merging the clinical data into one file
-sample_data <- cbind(title, source, diagnosis, id, sample, sf3b1, srsf2, genome) 
+#Function in order to extract from column table and merging everything into one dataframe
+extract_column_to_df <- function(data, patterns, names){
+  sample_list <- list()
+  
+  for (i in seq_along(patterns)){
+    col <- data |>
+      filter(str_detect(string = `^DATABASE = GeoMiame`,
+                        pattern = patterns[i]) == TRUE) |>
+      rename(!!names[i] := `^DATABASE = GeoMiame`)
+    
+    sample_list[[names[i]]] <- col[[names[i]]]
+  }
+  sample_df <- as.data.frame(sample_list)
+}
+
+patterns <- c("Sample_title =", "Sample_source_name_ch1", "disease status", "patient id", "SAMPLE", "sf3b1", "srsf2", "Genome_build")
+
+names <- c("title", "source", "diagnosis", "id", "sample", "sf3b1", "srsf2", "genome")
+
+sample_data <- meta_data |> extract_column_to_df(patterns, names)
 ```
 
 Removing unnecessary strings in each observation with the `str_remove` function.
