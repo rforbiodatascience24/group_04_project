@@ -49,9 +49,7 @@ basic_table <- table1( ~ Diagnosis | `Cell fraction`,
 basic_table
 ```
 
-
 And a bar plot describing the distribution of samples across the different diagnoses.
-
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
@@ -346,9 +344,7 @@ Two patients with MDS clearly have outliers with a differential gene expression 
 
 # K-means clustering
 
-
 We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Granulocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
-
 
 Make a vector with the genes of interest
 
