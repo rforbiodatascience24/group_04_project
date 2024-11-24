@@ -6,49 +6,27 @@ editor: visual
 format: revealjs
 ---
 
-```{r}
-
-#  revealjs:
-#    footer: "R4BDS Group 4 : Analysis of RNA Sequencing"
-#    transition: fade
-
-
-
-
-packages <- c("tidyverse", "here", "DESeq2", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "revealjs")
-install.packages(setdiff(packages, rownames(installed.packages())))
-
-if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
-  BiocManager::install("org.Hs.eg.db")
-}
-
-library("org.Hs.eg.db")
-library("tidyverse")
-library("here")
-library("DESeq2")
-library("broom")
-library("table1")
-library("ggprism")
-library("patchwork")
-library("RColorBrewer")
-library("revealjs")
-```
-
-## Introduction
+## Introduction {data-background="IMG_0825.JPG"}
 
 This is some text
+-RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells in myelodysplastic syndrome (MDS) patients and healthy controls (82)
+-Expression analysis conducted through high-throughput RNA sequencing
+-Objective of Paper: Analyzing the impact of SF3B1, SRSF2, and U2AF1 splicing factor mutations on pre-mRNA splicing and pathways
+-Objective of Group Project: ???
 
-## Data Retrieval and Cleaning
 
-This is some text
+## Methods: Data Retrieval and Cleaning
 
-## Gene Mapping and Cleanup
 
-This is some text
+![Description of the image](01_Data_loading.jpg)
+
+## Methods: Gene Mapping and Cleanup
+
+![Description of the image](02_Data_augmentation.jpg)
 
 ## Data Preparation for DESeq2 Analysis
 
-This is some text
+![Description of the image](03_Data_join.jpg)
 
 ## Transforming and Joining Data
 
@@ -58,18 +36,18 @@ This is some text
 
 This is some text
 
-## Some Finding 1
+## Results: Some Finding 1
 
 This is some text
 
-## Some Finding 2
+## Results: Some Finding 2
 
 This is some text
 
-## Some Finding 3
+## Results: Some Finding 3 or already Discussion
 
 This is some text
 
-## Final Thoughts and Outlook
+## Discussion: Final Thoughts and Outlook
 
 This is some text
