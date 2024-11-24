@@ -49,9 +49,7 @@ basic_table <- table1( ~ Diagnosis | `Cell fraction`,
 basic_table
 ```
 
-
 And a bar plot describing the distribution of samples across the different diagnoses.
-
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
@@ -63,6 +61,26 @@ cell_fraction_plot <- ggplot(data = sample_data,
   labs(title = "Diagnosis and cell fractions",
        y = "Number of samples",
        caption = "HD = healthy donor,\n MDS = myelodysplastic syndrome")
+cell_fraction_plot
+```
+
+Here, I have changed the above plot to a stacked plot so it is more concise:
+
+```{r}
+cell_fraction_plot <- ggplot(data = sample_data, 
+                             mapping = aes(x = Diagnosis, fill = `Cell fraction`)) + 
+  geom_bar(color = "black",
+           position = "stack", 
+           width = 0.6) +
+  theme_prism() +
+  labs(title = "Cell Fractions within MDS and Healthy donor samples",
+       y = "Number of Samples",
+       x = "Diagnosis",
+       fill = "Cell Fraction",  # Legend title
+       caption = "HD = healthy donor,\nMDS = myelodysplastic syndrome") +
+  theme_minimal() 
+
+
 cell_fraction_plot
 ```
 
@@ -136,6 +154,27 @@ mutant_plots
 ```
 
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
+
+I Redid the graph based on mutation status just to see which genes are mutated in which fractions
+
+```{r}
+mds_mut_data <- mds_data |>
+  rowwise() |>
+  mutate(mut_status = case_when(
+    sf3b1 == "MUT" ~ "sf3b1",
+    srsf2 == "MUT" ~ "srsf2",
+    TRUE ~ NA_character_  
+  )) |>
+  ungroup()
+
+
+ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status)) +
+  geom_jitter(width = 0.3, height = 0.1) +
+  labs(title = "Mutations Across Cell Fractions",
+       y = "Sample Points", x = "Cell Fraction", color = "Mutation") +
+  theme_linedraw()
+
+```
 
 ## Clustering analysis
 
@@ -346,9 +385,7 @@ Two patients with MDS clearly have outliers with a differential gene expression 
 
 # K-means clustering
 
-
 We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Granulocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
-
 
 Make a vector with the genes of interest
 
