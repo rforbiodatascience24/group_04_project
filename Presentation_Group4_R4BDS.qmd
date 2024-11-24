@@ -8,27 +8,25 @@ format: revealjs
 
 ## Introduction {data-background="IMG_0825.JPG"}
 
-This is some text
--RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells in myelodysplastic syndrome (MDS) patients and healthy controls (82)
--Expression analysis conducted through high-throughput RNA sequencing
--Objective of Paper: Analyzing the impact of SF3B1, SRSF2, and U2AF1 splicing factor mutations on pre-mRNA splicing and pathways
+This is some text 
+-RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells in myelodysplastic syndrome (MDS) patients and healthy controls (82) 
+-Expression analysis conducted through high-throughput RNA sequencing 
+-Objective of Paper: Analyzing the impact of SF3B1, SRSF2, and U2AF1 splicing factor mutations on pre-mRNA splicing and pathways 
 -Objective of Group Project: ???
-
 
 ## Methods: Data Retrieval and Cleaning
 
-
-![Description of the image](01_Data_loading.jpg)
+![Flowchart of data aquisition and inital tidying](01_Data_loading.jpg)
 
 ## Methods: Gene Mapping and Cleanup
 
-![Description of the image](02_Data_augmentation.jpg)
+![Flowchart of data augmentation](02_Data_augmentation.jpg)
 
 ## Data Preparation for DESeq2 Analysis
 
-![Description of the image](03_Data_join.jpg)
+![Flowchart of joining tables, and looking up gene names](03_Data_join.jpg)
 
-## Transforming and Joining Data
+## Transforming and Joining Data (maybe we don't need that as we kinda cover it in the previous slided)
 
 This is some text
 
