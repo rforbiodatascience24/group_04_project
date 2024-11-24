@@ -3,13 +3,18 @@ title: "Group04_Project_Presentation"
 author: "Tilman Nelissen"
 date: 3 dec 2024
 editor: visual
-format: 
-  revealjs:
-    footer: "R4BDS Group 4 : Analysis of RNA Sequencing"
-    transition: fade
+format: revealjs
 ---
 
 ```{r}
+
+#  revealjs:
+#    footer: "R4BDS Group 4 : Analysis of RNA Sequencing"
+#    transition: fade
+
+
+
+
 packages <- c("tidyverse", "here", "DESeq2", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "revealjs")
 install.packages(setdiff(packages, rownames(installed.packages())))
 
