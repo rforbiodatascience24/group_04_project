@@ -385,7 +385,15 @@ Two patients with MDS clearly have outliers with a differential gene expression 
 
 # K-means clustering
 
-We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Granulocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
+We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines.
+
+\- HSC: CD34 and KIT
+
+\- Monocytic: HLA-DRA, CCR2
+
+\- Granulocytic: NOS1, CXCL8
+
+\- Erythroid: HBB and HBA1
 
 Make a vector with the genes of interest
 
@@ -424,14 +432,19 @@ ggplot(data = augmented_data_for_selected_genes,
                      color = .cluster, 
                      shape = cells)) + 
   geom_point(size = 4,
-             alpha = 0.5) + 
-  theme_prism() + 
+             alpha = 0.5) +
   scale_color_brewer(palette = "Set1") + 
-  labs(title = "Kmeans clustering with K = 4", 
+  labs(title = "Kmeans clustering with k = 4", 
        color = "Cluster number", 
-       subtitle = "Clustering on lineage specific genes") + 
+       subtitle = "Clustering on lineage specific genes", 
+       shape = "Cells",
+       x = "CD34 expression", 
+       y = "HBB expression") + 
   scale_y_log10() +
-  scale_x_log10()
+  scale_x_log10() + 
+  theme_minimal() + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(plot.subtitle = element_text(hjust = 0.5))
 ```
 
 We clearly see a clustering pattern here, where CD34 is increased in the HSC compartment, whereas HBB is enhanced in the the erythroid conmpartment. The monocytic and granulocytic progenitors express neither.
