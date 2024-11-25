@@ -28,6 +28,20 @@ sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
 count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
 ```
 
+First we need to convert each observation of the variable `sample` to the variable `id` that will be used for rownames.
+
+```{r}
+sample_data <- sample_data |>
+  mutate(id = sample) |> 
+  column_to_rownames(var = "id")
+```
+
+And then check if the rownames of sample_data is equal to column names in count_data.
+
+```{r}
+all(rownames(sample_data) == colnames(count_data))
+```
+
 To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`
 
 Making the count_data variables numeric.
