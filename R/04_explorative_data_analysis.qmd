@@ -178,7 +178,7 @@ ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status
 
 ## Clustering analysis
 
-### Clustering by principal component analysis
+### Clustering by principal component analysis on data that have not been normalized using the variance stabilizing transformation. 
 
 Read in the `count_data`.
 
