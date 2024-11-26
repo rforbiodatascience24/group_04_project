@@ -20,15 +20,19 @@ library("RColorBrewer")
 
 ```
 
+
 ## Description of sample data
 
 Data load into `sample_data.`
+
 
 ```{r}
 sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
 ```
 
+
 Varibles and values in `sample_data` renamed, so they look nicer in tables and plots
+
 
 ```{r}
 sample_data <- sample_data |> 
@@ -41,7 +45,9 @@ sample_data <- sample_data |>
   )
 ```
 
+
 Making table with descriptives
+
 
 ```{r}
 basic_table <- table1( ~ Diagnosis | `Cell fraction`, 
@@ -49,7 +55,9 @@ basic_table <- table1( ~ Diagnosis | `Cell fraction`,
 basic_table
 ```
 
+
 And a bar plot describing the distribution of samples across the different diagnoses.
+
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
@@ -64,7 +72,9 @@ cell_fraction_plot <- ggplot(data = sample_data,
 cell_fraction_plot
 ```
 
+
 Here, I have changed the above plot to a stacked plot so it is more concise:
+
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
@@ -84,7 +94,9 @@ cell_fraction_plot <- ggplot(data = sample_data,
 cell_fraction_plot
 ```
 
+
 Making plots to explore the mutational spectrum of the samples. As only MDS samples have the mutations, we filter for patients with MDS.
+
 
 ```{r}
 mds_data <- sample_data |> 
@@ -153,9 +165,11 @@ mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_fra
 mutant_plots
 ```
 
+
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
 
 I Redid the graph based on mutation status just to see which genes are mutated in which fractions
+
 
 ```{r}
 mds_mut_data <- mds_data |>
@@ -176,7 +190,9 @@ ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status
 
 ```
 
+
 ### Histogram : Gene frequencies
+
 
 ```{r}
 count_data <- count_data |> 
@@ -187,65 +203,87 @@ normalized_counts <- normalized_counts |>
 
 ```
 
+```{r}
+normalized_sum <- rowSums(normalized_counts)
+```
+
+
 ## Clustering analysis
 
 ### Clustering by principal component analysis
 
 Read in the `count_data`.
 
+
 ```{r}
 count_data <- read_tsv(file = here("data/03_full_data.tsv"))
 ```
 
+
 To make the PCA we need the data to be in a wide data format, so we use `pivot_wider` for that.
+
 
 ```{r}
 wide_count_data <- count_data |> 
   pivot_wider(names_from = "gene", values_from = "counts")
 ```
 
+
 For a correct PCA, we need to scale the data, which should only be done on the gene-counts, so we deselect, non-count data
+
 
 ```{r}
 gene_data <- wide_count_data |> 
   select(!c(sample:cells))
 ```
 
+
 Some genes have a very low count, and it is problematic to apply a z-score if most counts are equal between the samples, so we remove genes, where the total count is below 10. Making vector `keep` with observation with counts \> 10
+
 
 ```{r}
 keep <- colSums(gene_data) >10 
 ```
 
+
 And the number of genes with more than 10 counts is then `sum(keep)` and the number of genes with 10 counts or less is `sum(!keep)`
 
 We subset the genes with more than 10 counts
+
 
 ```{r}
 gene_data <- gene_data[, keep]
 ```
 
+
 And scale to make the data ready for PCA
+
 
 ```{r}
 gene_data_scaled <- gene_data |> 
   scale()
 ```
 
+
 Perform the principal component analysis, where the PCA object is saved into `pca_object`.
+
 
 ```{r}
 pca_object <- prcomp(gene_data_scaled)
 ```
 
+
 Next we augment our original count data with the fitted principal components by using the `augment` function provided by `broom` package.
+
 
 ```{r}
 augmented <- pca_object |> 
   broom::augment(wide_count_data)
 ```
 
+
 ### PCA plot
+
 
 ```{r}
 pca_plot_all <- ggplot(data = augmented, 
@@ -268,7 +306,9 @@ pca_plot_all <- ggplot(data = augmented,
 pca_plot_all
 ```
 
+
 Then we extract the eigenvalues from our `pca_object` to make a scree plot in order to identify how many clusters we should make. From the PCA plot one would suggest three clusters, but a scree-plot could be helpful.
+
 
 ```{r}
 eigen <- pca_object |> 
@@ -289,7 +329,9 @@ scree_all_cell_fractions <- eigen |>
 scree_all_cell_fractions
 ```
 
+
 ### PCA of HSC only
+
 
 ```{r}
 pca_plot_hsc <- augmented |> 
@@ -309,7 +351,9 @@ pca_plot_hsc <- augmented |>
 pca_plot_hsc
 ```
 
+
 We check to see if there is any specific clustering of HSC in patients with MDS, that harbor a mutation in the SRSF2 gene
+
 
 ```{r}
 pca_plot_mds_srsf2 <- augmented |> 
@@ -329,7 +373,9 @@ pca_plot_mds_srsf2 <- augmented |>
 pca_plot_mds_srsf2
 ```
 
+
 We then look at if there is a specific clustering of HSC from MDS patients with a mutation in SF3B1
+
 
 ```{r}
 pca_plot_mds_sf3b1 <- augmented |> 
@@ -349,9 +395,11 @@ pca_plot_mds_sf3b1 <- augmented |>
 pca_plot_mds_sf3b1
 ```
 
+
 The gene expression in some samples seem to be affected by the SF3B1 mutation
 
 ### PCA of monocytic and granulocytic progenitors in MDS and healthy donors
+
 
 ```{r}
 ### Monocytic and granulocytic progenitors both HD and MDS
@@ -372,7 +420,9 @@ pca_gran_mono <- augmented |>
 pca_gran_mono
 ```
 
+
 Some patients have outliers in the granulocytic/monocytic compartment compared to HD
+
 
 ```{r}
 pca_ery <- augmented |> 
@@ -392,6 +442,7 @@ pca_ery <- augmented |>
 pca_ery
 ```
 
+
 Two patients with MDS clearly have outliers with a differential gene expression in their erythroid progenitors.
 
 # K-means clustering
@@ -400,11 +451,14 @@ We test out clustering by the k-means clustering method too. As we have so many 
 
 Make a vector with the genes of interest
 
+
 ```{r}
 genes_of_interest <- c("CD34", "KIT", "HLA-DRA", "CCR2", "NOS1", "CXCL8", "HBB", "HBA1")
 ```
 
+
 Selecting for `genes_of_interest` in the `gene_data_scaled` object.
+
 
 ```{r}
 gene_data_scaled <- as.data.frame(gene_data_scaled)
@@ -413,20 +467,26 @@ gene_data_scaled_selected_genes <- gene_data_scaled |>
   select(all_of(genes_of_interest))
 ```
 
+
 Making the model with 4 clusters
+
 
 ```{r}
 k_4 <- kmeans(x = gene_data_scaled_selected_genes, centers = 4)
 ```
 
+
 Augmenting our dataset
+
 
 ```{r}
 augmented_data_for_selected_genes <- k_4 |> 
   augment(wide_count_data)
 ```
 
+
 Plotting the clusters genes
+
 
 ```{r}
 ggplot(data = augmented_data_for_selected_genes, 
@@ -445,6 +505,8 @@ ggplot(data = augmented_data_for_selected_genes,
   scale_x_log10()
 ```
 
+
 We clearly see a clustering pattern here, where CD34 is increased in the HSC compartment, whereas HBB is enhanced in the the erythroid conmpartment. The monocytic and granulocytic progenitors express neither.
 
 Probably we need to employ some other form of dimensionality reduction/clustering than k-means.
+
