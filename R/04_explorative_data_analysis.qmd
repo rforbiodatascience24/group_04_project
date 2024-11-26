@@ -7,7 +7,7 @@ editor: visual
 
 ```{r}
 rm(list=ls()) #remove all variables in the environment
-packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer")
+packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "DESeq2")
 install.packages(setdiff(packages, rownames(installed.packages())))
 
 library("here")
@@ -17,6 +17,7 @@ library("table1")
 library("ggprism")
 library("patchwork")
 library("RColorBrewer")
+library("DESeq2")
 
 ```
 
@@ -53,21 +54,6 @@ And a bar plot describing the distribution of samples across the different diagn
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
-                             mapping = aes(x = Diagnosis)) + 
-  geom_bar(fill = "cornflowerblue", 
-           color = "black") + 
-  facet_wrap(~ `Cell fraction`) + 
-  theme_prism() +
-  labs(title = "Diagnosis and cell fractions",
-       y = "Number of samples",
-       caption = "HD = healthy donor,\n MDS = myelodysplastic syndrome")
-cell_fraction_plot
-```
-
-Here, I have changed the above plot to a stacked plot so it is more concise:
-
-```{r}
-cell_fraction_plot <- ggplot(data = sample_data, 
                              mapping = aes(x = Diagnosis, fill = `Cell fraction`)) + 
   geom_bar(color = "black",
            position = "stack", 
@@ -79,7 +65,6 @@ cell_fraction_plot <- ggplot(data = sample_data,
        fill = "Cell Fraction",  # Legend title
        caption = "HD = healthy donor,\nMDS = myelodysplastic syndrome") +
   theme_minimal() 
-
 
 cell_fraction_plot
 ```
@@ -157,27 +142,6 @@ mutant_plots
 
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
 
-I Redid the graph based on mutation status just to see which genes are mutated in which fractions
-
-```{r}
-mds_mut_data <- mds_data |>
-  rowwise() |>
-  mutate(mut_status = case_when(
-    sf3b1 == "MUT" ~ "sf3b1",
-    srsf2 == "MUT" ~ "srsf2",
-    TRUE ~ NA_character_  
-  )) |>
-  ungroup()
-
-
-ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status)) +
-  geom_jitter(width = 0.3, height = 0.1) +
-  labs(title = "Mutations Across Cell Fractions",
-       y = "Sample Points", x = "Cell Fraction", color = "Mutation") +
-  theme_linedraw()
-
-```
-
 ## Clustering analysis
 
 ### Clustering by principal component analysis on data that have not been normalized using the variance stabilizing transformation.
@@ -246,7 +210,7 @@ pca_plot_all <- ggplot(data = augmented,
                                      color = diagnosis)
 ) + 
   geom_point(alpha = 0.7, size = 6) + 
-  labs(title = "PCA of all samples", 
+  labs(title = "PCA of all samples - non-VST normalized", 
        x = "PC1", 
        y = "PC2", 
        shape = "Cell fraction", 
@@ -280,110 +244,324 @@ scree_all_cell_fractions <- eigen |>
 scree_all_cell_fractions
 ```
 
-### PCA of HSC only
+## PCA of HSC only using VST transformed data
+
+We need to read in the count data and the sample data for all and then run the DESeq algorithm
+
+And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
 
 ```{r}
-pca_plot_hsc <- augmented |> 
-  filter(cells == "HSC") |> 
-  ggplot(mapping = aes(x = .fittedPC1, 
-                       y = .fittedPC2, 
-                       fill = diagnosis)
-  ) + 
-  geom_point(shape = 21, 
-             size = 5, 
-             alpha = 0.7)  +
-  labs(title = "PCA of hematopoietic stem cells", 
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))  
+
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
+```
+
+First we need to convert each observation of the variable `sample` to the variable `id` that will be used for rownames.
+
+
+```{r}
+sample_data <- sample_data |>   
+  mutate("id" = sample) |>    
+  column_to_rownames(var = "id")
+```
+
+
+And then check if the rownames of sample_data is equal to column names in count_data.
+
+```{r}
+all(rownames(sample_data) == colnames(count_data))
+```
+
+To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`
+
+Making the count_data variables numeric.
+
+```{r}
+count_data <- count_data |>    
+  mutate(across(everything(), 
+                as.numeric)
+         )
+```
+
+Making the DESeq2-object.
+
+```{r}
+dds_object <- DESeqDataSetFromMatrix(countData = count_data,                                       
+                                     colData = sample_data,                                       
+                                     design = ~ sf3b1 + srsf2 + cells + diagnosis)
+```
+
+Applying the vst-transformation to the dds_object
+
+```{r}
+dds_object <- vst(object = dds_object, 
+                  blind = T)
+```
+
+Extracting the data from the PCA transformation
+
+```{r}
+pca_all_cells <- plotPCA(object = dds_object, intgroup = "diagnosis")
+
+df_pca_all_cells <- pca_all_cells[[1]]
+
+
+
+df_pca_all_cells <- df_pca_all_cells |> 
+  mutate(sample = name) |> 
+  select(-name)
+```
+
+We join with the sample data on name = sample to get the cell fraction and diagnosis
+```{r}
+df_pca_all_cells_joined <- df_pca_all_cells |> 
+  full_join(y = sample_data,
+            by = "sample")
+```
+Plotting all cells with VST transformation
+```{r}
+pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined, 
+                            mapping = aes(x = PC1, 
+                                          y = PC2, 
+                                          shape = cells, 
+                                          color = diagnosis.x)) + 
+  geom_point(size = 3, alpha = 0.7)+ 
+  scale_color_brewer(palette = "Set1") + 
+  labs(title = "PCA of all samples - VST transformed",
+       color = "Diagnosis", 
+       shape = "Cells") +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme_minimal()
+```
+
+
+
+
+### PCA of HSC only
+
+We need to read in the count data and the sample data for all, select for HSC and run the DESeq2 algorithm. 
+
+And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
+
+```{r}
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))  
+
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
+```
+
+
+
+The aim of this analysis is to perform DGE analysis on samples that only contain HSC. We found a high variation in the gene expression between the different cell fractions in our first analysis. Now, we want to scope fully on HSC, as these are the biologically most important cells for MDS.
+
+To generate a count matrix with normalized counts we have to apply the DESeq2 analysis on samples that only contain HSC. Hence, we need to filter out data that do not contain `cells == "HSC"`.
+
+We get the sample ID (the one containing GSM....) from the samples that do not contain HSC.
+
+```{r}
+delete_cols <- sample_data |> 
+  filter(!cells == "HSC") 
+
+delete_cols <- delete_cols |> 
+  select(sample)
+
+delete_samples <- delete_cols$sample
+
+```
+
+And from the `count_data` we deselect these columns, so that we now only have HSC derived samples in the `count_data`.
+
+```{r}
+count_data <- count_data |> 
+  dplyr::select(-all_of(delete_samples))
+```
+
+We filter for samples that have HSC in the `cells`
+
+```{r}
+sample_data <- sample_data |> 
+  filter(cells == "HSC") 
+```
+
+And convert `count_data` to numeric.
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+```
+
+We then ensure, that the column variable `sample` in `sample_data` will be converted to rownames by the `column_to_rownames` function.
+
+And in the next command we check that they are equal.
+
+```{r}
+sample_data <- sample_data |> 
+  column_to_rownames(var = "sample")
+
+all(rownames(sample_data) == colnames(count_data))
+```
+
+Then we run the DESeq2 object from matrix
+
+```{r}
+dds_object_hsc_only <- DESeqDataSetFromMatrix(countData = count_data, 
+                                              colData = sample_data, 
+                                              design = ~ srsf2 + sf3b1 + diagnosis)
+```
+
+We estimate size factors
+
+```{r}
+dds_object_hsc_only <- estimateSizeFactors(object = dds_object_hsc_only)
+```
+
+And require normalized counts\
+
+```{r}
+norm_counts <- counts(object = dds_object_hsc_only, normalize = TRUE)
+```
+
+Convert to data frame
+
+```{r}
+norm_counts <- data.frame(norm_counts)
+```
+
+Now we have the normalized counts for each sample.
+
+We extract the rownames from the `norm_counts` and use them as values for the new variable `gene` and remove the rownames afterwards.
+
+```{r}
+gene_names <- base::rownames(x = norm_counts)
+
+norm_counts <- norm_counts |> 
+  mutate(gene = gene_names)
+
+base::rownames(norm_counts) <- NULL
+```
+
+Pivoting longer into a new column termed `sample` which contains the sample_id.
+
+```{r}
+counts_long <- norm_counts |> 
+  pivot_longer(cols = contains("GSM"), 
+               names_to = "sample", 
+               values_to = "counts") |> 
+  mutate(counts = round(x = counts, digits = 0))
+```
+
+And we join with sample_data on `sample`, where we firstly need to provide a variable `sample` in the `sample_data`.
+
+```{r}
+sample_id <- rownames(sample_data)
+
+sample_data <- sample_data |> 
+  mutate(sample = sample_id)
+
+base::rownames(sample_data) <- NULL
+```
+
+```{r}
+full_data <- counts_long |> 
+  full_join(sample_data, by = "sample")
+```
+
+# PCA
+
+To make the PCA we need to pivot the data into a wide format
+
+```{r}
+wide_count_data_hsc <- full_data |> 
+  pivot_wider(names_from = "gene", values_from = "counts")
+```
+
+And extract and scale the gene counts
+
+```{r}
+count_data_numeric <- wide_count_data_hsc |> 
+  dplyr::select(where(is.numeric)) 
+
+count_data_to_keep <- colSums(x = count_data_numeric) > 10
+
+count_data_numeric <- count_data_numeric[, count_data_to_keep]
+
+count_data_scaled <- count_data_numeric |> 
+  scale() 
+```
+
+Doing the PCA
+
+```{r}
+pca_object <- prcomp(x = count_data_scaled)
+```
+
+Using `augment` in `broom` to get the principal components
+
+```{r}
+augmented <- pca_object |> 
+  augment(wide_count_data_hsc)
+```
+
+And then we plot the first two principal components
+
+```{r}
+pca_plot_hsc <- ggplot(data = augmented, 
+                       mapping = aes(x = .fittedPC1, 
+                                     y = .fittedPC2, 
+                                     fill = diagnosis)
+) + 
+  geom_point(alpha = 0.7, 
+             size = 6, 
+             shape = 21, 
+             color = "black") + 
+  labs(title = "PCA\n HSC samples without VST transformation", 
        x = "PC1", 
-       y = "PC2") +
+       y = "PC2", 
+       color = "Diagnosis") + 
   theme_prism() +
-  scale_fill_brewer(palette = "Set1") 
+  scale_fill_brewer(palette = "Set1")
 pca_plot_hsc
 ```
 
-We check to see if there is any specific clustering of HSC in patients with MDS, that harbor a mutation in the SRSF2 gene
+But according to theory we should employ PCA on count data that have been furthermore normalized using the DESeq algorithm and additionally normalized using the variance stabilizing transformation.
+
+So firstly we run or dds_object through the `DESeq` algorithm.
 
 ```{r}
-pca_plot_mds_srsf2 <- augmented |> 
-  filter(diagnosis == "MDS" & cells == "HSC") |> 
-  ggplot(mapping = aes(x = .fittedPC1, 
-                       y = .fittedPC2, 
-                       fill = srsf2)
-  ) + 
-  geom_point(shape = 21, 
-             size = 5, 
-             alpha = 0.7)  +
-  labs(title = "PCA of hematopoietic stem cells  - impact of mutation in SRSF2", 
-       x = "PC1", 
-       y = "PC2") +
-  theme_prism() +
-  scale_fill_brewer(palette = "Set1") 
-pca_plot_mds_srsf2
+dds_object_hsc_only <- DESeq(dds_object_hsc_only)
+
 ```
 
-We then look at if there is a specific clustering of HSC from MDS patients with a mutation in SF3B1
+Runningt variance stabilizing transformation on our object.
 
 ```{r}
-pca_plot_mds_sf3b1 <- augmented |> 
-  filter(diagnosis == "MDS" & cells == "HSC") |> 
-  ggplot(mapping = aes(x = .fittedPC1, 
-                       y = .fittedPC2, 
-                       fill = sf3b1)
-  ) + 
-  geom_point(shape = 21, 
-             size = 5, 
-             alpha = 0.7)  +
-  labs(title = "PCA of hematopoietic stem cells - impact of mutation in SF3B1", 
-       x = "PC1", 
-       y = "PC2") +
-  theme_prism() +
-  scale_fill_brewer(palette = "Set1") 
-pca_plot_mds_sf3b1
+vst_transformed <- vst(dds_object_hsc_only, blind = T)
 ```
 
-The gene expression in some samples seem to be affected by the SF3B1 mutation
-
-### PCA of monocytic and granulocytic progenitors in MDS and healthy donors
+Extracting the data from the `vst_transformed` object, which is a list and from this extracting the first list, which contains the plotting data.
 
 ```{r}
-### Monocytic and granulocytic progenitors both HD and MDS
-pca_gran_mono <- augmented |> 
-  filter(cells == "monocytic" | cells == "granulocytic") |> 
-  ggplot(mapping = aes(x = .fittedPC1, 
-                       y = .fittedPC2, 
-                       fill = diagnosis)
-  ) + 
-  geom_point(shape = 21, 
-             size = 5, 
-             alpha = 0.7)  +
-  labs(title = "PCA of granulocytic/monocytic progenitors", 
-       x = "PC1", 
-       y = "PC2") +
-  theme_prism() +
-  scale_fill_brewer(palette = "Set1") 
-pca_gran_mono
+pca_data <- plotPCA(vst_transformed, intgroup = "diagnosis")
+
+pca_data_for_plot <- pca_data[[1]]
 ```
 
-Some patients have outliers in the granulocytic/monocytic compartment compared to HD
+We use these data for plotting
 
 ```{r}
-pca_ery <- augmented |> 
-  filter(cells == "erythroid") |> 
-  ggplot(mapping = aes(x = .fittedPC1, 
-                       y = .fittedPC2, 
-                       fill = diagnosis)
-  ) + 
-  geom_point(shape = 21, 
-             size = 5, 
-             alpha = 0.7)  +
-  labs(title = "PCA of erythroid progenitors", 
-       x = "PC1", 
-       y = "PC2") +
-  theme_prism() +
-  scale_fill_brewer(palette = "Set1") 
-pca_ery
+ggplot(data = pca_data_for_plot, 
+       mapping = aes(x = PC1, 
+                     y = PC2, 
+                     fill = diagnosis)
+       ) + 
+  geom_point(alpha = 0.7, 
+             size = 6, 
+             shape = 21, 
+             color = "black") + 
+  theme_prism() + 
+  scale_fill_brewer(palette = "Set1") + 
+  labs(title = "PCA\n HSC samples with VST transformation")
 ```
 
-Two patients with MDS clearly have outliers with a differential gene expression in their erythroid progenitors.
 
 # K-means clustering
 
