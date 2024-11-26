@@ -339,44 +339,63 @@ Tilman Nelissen
 
   <p class="date">2024-12-03</p>
 </section>
-<section id="introduction" class="slide level2">
+<section id="introduction" class="slide level2" data-background="IMG_0825.JPG">
 <h2>Introduction</h2>
-<p>This is some text</p>
+<div>
+<ul>
+<li>The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.</li>
+<li>The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.</li>
+<li>Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms.</li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/clipboard-1241564374.png"></p>
+<figcaption>From: https://www.sigmaaldrich.com/</figcaption>
+</figure>
+</div>
+</div>
 </section>
-<section id="data-retrieval-and-cleaning" class="slide level2">
-<h2>Data Retrieval and Cleaning</h2>
-<p>This is some text</p>
+<section id="section" class="slide level2">
+<h2></h2>
 </section>
-<section id="gene-mapping-and-cleanup" class="slide level2">
-<h2>Gene Mapping and Cleanup</h2>
-<p>This is some text</p>
-</section>
+<section id="materials-and-methods-data-retrieval-and-cleaning" class="slide level2">
+<h2>Materials and methods: Data Retrieval and Cleaning</h2>
+<ul>
+<li><p>Data identified on the Gene Expression Omnibus server: <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19429" class="uri">https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19429</a></p></li>
+<li><p>Two data files - the sample data and the raw count data.</p></li>
+</ul>
+
+<img data-src="01_Data_loading.jpg" class="r-stretch quarto-figure-center"><p class="caption">Flowchart of data aquisition and inital tidying</p></section>
+<section id="methods-gene-mapping-and-cleanup" class="slide level2">
+<h2>Methods: Gene Mapping and Cleanup</h2>
+
+<img data-src="02_Data_augmentation.jpg" class="r-stretch quarto-figure-center"><p class="caption">Flowchart of data augmentation</p></section>
 <section id="data-preparation-for-deseq2-analysis" class="slide level2">
 <h2>Data Preparation for DESeq2 Analysis</h2>
-<p>This is some text</p>
-</section>
-<section id="transforming-and-joining-data" class="slide level2">
-<h2>Transforming and Joining Data</h2>
+
+<img data-src="03_Data_join.jpg" class="r-stretch quarto-figure-center"><p class="caption">Flowchart of joining tables, and looking up gene names</p></section>
+<section id="transforming-and-joining-data-maybe-we-dont-need-that-as-we-kinda-cover-it-in-the-previous-slided" class="slide level2">
+<h2>Transforming and Joining Data (maybe we don’t need that as we kinda cover it in the previous slided)</h2>
 <p>This is some text</p>
 </section>
 <section id="exploratory-data-analysis" class="slide level2">
 <h2>Exploratory Data Analysis</h2>
 <p>This is some text</p>
 </section>
-<section id="some-finding-1" class="slide level2">
-<h2>Some Finding 1</h2>
+<section id="results-some-finding-1" class="slide level2">
+<h2>Results: Some Finding 1</h2>
 <p>This is some text</p>
 </section>
-<section id="some-finding-2" class="slide level2">
-<h2>Some Finding 2</h2>
+<section id="results-some-finding-2" class="slide level2">
+<h2>Results: Some Finding 2</h2>
 <p>This is some text</p>
 </section>
-<section id="some-finding-3" class="slide level2">
-<h2>Some Finding 3</h2>
+<section id="results-some-finding-3-or-already-discussion" class="slide level2">
+<h2>Results: Some Finding 3 or already Discussion</h2>
 <p>This is some text</p>
 </section>
-<section id="final-thoughts-and-outlook" class="slide level2">
-<h2>Final Thoughts and Outlook</h2>
+<section id="discussion-final-thoughts-and-outlook" class="slide level2">
+<h2>Discussion: Final Thoughts and Outlook</h2>
 <p>This is some text</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
@@ -594,82 +613,6 @@ Tilman Nelissen
         ]
       });
     </script>
-    
-
-    <script>
-
-      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
-
-      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
-
-      // slide changes (different for each slide format).
-
-      (function () {
-
-        // dispatch for htmlwidgets
-
-        function fireSlideEnter() {
-
-          const event = window.document.createEvent("Event");
-
-          event.initEvent("slideenter", true, true);
-
-          window.document.dispatchEvent(event);
-
-        }
-
-    
-
-        function fireSlideChanged(previousSlide, currentSlide) {
-
-          fireSlideEnter();
-
-    
-
-          // dispatch for shiny
-
-          if (window.jQuery) {
-
-            if (previousSlide) {
-
-              window.jQuery(previousSlide).trigger("hidden");
-
-            }
-
-            if (currentSlide) {
-
-              window.jQuery(currentSlide).trigger("shown");
-
-            }
-
-          }
-
-        }
-
-    
-
-        // hookup for slidy
-
-        if (window.w3c_slidy) {
-
-          window.w3c_slidy.add_observer(function (slide_num) {
-
-            // slide_num starts at position 1
-
-            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
-
-          });
-
-        }
-
-    
-
-      })();
-
-    </script>
-
-    
-
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
       const toggleBodyColorMode = (bsSheetEl) => {

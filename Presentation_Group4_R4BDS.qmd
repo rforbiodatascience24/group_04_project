@@ -8,13 +8,23 @@ format: revealjs
 
 ## Introduction {data-background="IMG_0825.JPG"}
 
-This is some text 
--RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells in myelodysplastic syndrome (MDS) patients and healthy controls (82) 
--Expression analysis conducted through high-throughput RNA sequencing 
--Objective of Paper: Analyzing the impact of SF3B1, SRSF2, and U2AF1 splicing factor mutations on pre-mRNA splicing and pathways 
--Objective of Group Project: ???
+<div>
 
-## Methods: Data Retrieval and Cleaning
+-   The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.
+-   The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.
+-   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms.
+
+![From: https://www.sigmaaldrich.com/](images/clipboard-1241564374.png)
+
+</div>
+
+##  
+
+## Materials and methods: Data Retrieval and Cleaning
+
+-   Data identified on the Gene Expression Omnibus server: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19429>
+
+-   Two data files - the sample data and the raw count data.
 
 ![Flowchart of data aquisition and inital tidying](01_Data_loading.jpg)
 
