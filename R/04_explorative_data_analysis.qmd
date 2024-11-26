@@ -42,19 +42,22 @@ sample_data <- sample_data |>
   )
 ```
 
-Making table with descriptives
+Making table with descriptives and saving.
 
 ```{r}
 basic_table <- table1( ~ Diagnosis | `Cell fraction`, 
                        data = sample_data)
-basic_table
+
+htmltools::save_html(html = basic_table, file = here("images/table01.html"))
 ```
 
-And a bar plot describing the distribution of samples across the different diagnoses.
+And a bar plot describing the distribution of samples across the different diagnoses and saving.
 
 ```{r}
 cell_fraction_plot <- ggplot(data = sample_data, 
-                             mapping = aes(x = Diagnosis, fill = `Cell fraction`)) + 
+                             mapping = aes(x = Diagnosis, 
+                                           fill = `Cell fraction`)
+                             ) + 
   geom_bar(color = "black",
            position = "stack", 
            width = 0.6) +
@@ -64,9 +67,13 @@ cell_fraction_plot <- ggplot(data = sample_data,
        x = "Diagnosis",
        fill = "Cell Fraction",  # Legend title
        caption = "HD = healthy donor,\nMDS = myelodysplastic syndrome") +
-  theme_minimal() 
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1")
 
 cell_fraction_plot
+
+ggsave(plot = cell_fraction_plot, 
+       filename = here("images/plot_cell_fraction_plot.png"))
 ```
 
 Making plots to explore the mutational spectrum of the samples. As only MDS samples have the mutations, we filter for patients with MDS.
@@ -135,8 +142,13 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
 
 ### Patching it all together
 mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_frac_plot)
-mutant_plots
 
+
+ggsave(plot = mutant_plots, 
+       file = here("images/plot_mutations_across_samples.png"), 
+                   device = "png", 
+                   width = 15, 
+                   height = 7)
 ```
 
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
@@ -202,24 +214,26 @@ augmented <- pca_object |>
 ### PCA plot
 
 ```{r}
-pca_plot_all <- ggplot(data = augmented, 
+plot_pca_all_non_vst <- ggplot(data = augmented, 
                        mapping = aes(x = .fittedPC1, 
                                      y = .fittedPC2,
                                      shape = cells, 
                                      color = diagnosis)
 ) + 
   geom_point(alpha = 0.7, size = 6) + 
-  labs(title = "PCA of all samples - non-VST normalized", 
+  labs(title = "All samples\nNo VST transformation", 
        x = "PC1", 
        y = "PC2", 
        shape = "Cell fraction", 
        color = "Diagnosis") + 
-  theme_prism() + 
+  theme_minimal() + 
   scale_shape_discrete(name = "Cell fraction", 
                        labels = c("Erythroid", "Granulocytic", "Hematopoietic", "Monocytic")
   ) +
-  scale_color_brewer(palette = "Set1")
-pca_plot_all
+  scale_color_brewer(palette = "Set1") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot_pca_all_non_vst
 ```
 
 Then we extract the eigenvalues from our `pca_object` to make a scree plot in order to identify how many clusters we should make. From the PCA plot one would suggest three clusters, but a scree-plot could be helpful.
@@ -243,15 +257,13 @@ scree_all_cell_fractions <- eigen |>
 scree_all_cell_fractions
 ```
 
-## PCA of HSC only using VST transformed data
+## PCA using VST transformed data
 
 We need to read in the count data and the sample data for all and then run the DESeq algorithm
 
 And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
 
 ```{r}
-
-
 sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))  
 
 count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
@@ -320,18 +332,20 @@ df_pca_all_cells_joined <- df_pca_all_cells |>
 Plotting all cells with VST transformation
 
 ```{r}
-pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined, 
+plot_pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined, 
                             mapping = aes(x = PC1, 
                                           y = PC2, 
                                           shape = cells, 
                                           color = diagnosis.x)) + 
-  geom_point(size = 3, alpha = 0.7)+ 
+  geom_point(size = 6, alpha = 0.7)+ 
   scale_color_brewer(palette = "Set1") + 
-  labs(title = "PCA of all samples - VST transformed",
+  labs(title = "All samples\nVST transformation",
        color = "Diagnosis", 
        shape = "Cells") +
-  theme(plot.title = element_text(hjust = 0.5)) + 
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+plot_pca_all_cells_vst
 ```
 
 ### PCA of HSC only
@@ -499,7 +513,7 @@ augmented <- pca_object |>
 And then we plot the first two principal components
 
 ```{r}
-pca_plot_hsc <- ggplot(data = augmented, 
+plot_pca_hsc_non_vst <- ggplot(data = augmented, 
                        mapping = aes(x = .fittedPC1, 
                                      y = .fittedPC2, 
                                      fill = diagnosis)
@@ -508,13 +522,15 @@ pca_plot_hsc <- ggplot(data = augmented,
              size = 6, 
              shape = 21, 
              color = "black") + 
-  labs(title = "PCA\n HSC samples without VST transformation", 
+  labs(title = "HSC samples\nNo VST transformation", 
        x = "PC1", 
        y = "PC2", 
-       color = "Diagnosis") + 
-  theme_prism() +
-  scale_fill_brewer(palette = "Set1")
-pca_plot_hsc
+       fill = "Diagnosis") + 
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set1") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot_pca_hsc_non_vst
 ```
 
 But according to theory we should employ PCA on count data that have been furthermore normalized using the DESeq algorithm and additionally normalized using the variance stabilizing transformation.
@@ -542,7 +558,7 @@ pca_data_for_plot <- data.frame(pca_data[[1]])
 We use these data for plotting
 
 ```{r}
-ggplot(data = pca_data_for_plot, 
+plot_pca_hsc_vst <- ggplot(data = pca_data_for_plot, 
        mapping = aes(x = PC1, 
                      y = PC2, 
                      fill = diagnosis)
@@ -551,9 +567,21 @@ ggplot(data = pca_data_for_plot,
              size = 6, 
              shape = 21, 
              color = "black") + 
-  theme_prism() + 
+  theme_minimal() + 
   scale_fill_brewer(palette = "Set1") + 
-  labs(title = "PCA\n HSC samples with VST transformation")
+  labs(title = "HSC samples\nVST transformation", 
+       fill = "Diagnosis") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot_pca_hsc_vst
+```
+
+Patching the four PCA plots together
+
+```{r}
+pca_combined <- (plot_pca_all_non_vst + plot_pca_hsc_non_vst) / (plot_pca_all_cells_vst + plot_pca_hsc_vst)
+
+ggsave(plot = pca_combined, file = here("images/pca_plots_combined.png"), width = 20, height = 10)
 ```
 
 # K-means clustering
@@ -599,11 +627,12 @@ augmented_data_for_selected_genes <- k_4 |>
 Plotting the clusters genes
 
 ```{r}
-ggplot(data = augmented_data_for_selected_genes, 
+plot_kmeans <- ggplot(data = augmented_data_for_selected_genes, 
        mapping = aes(x = CD34, 
                      y = HBB,
                      color = .cluster, 
-                     shape = cells)) + 
+                     shape = cells)
+       ) + 
   geom_point(size = 4,
              alpha = 0.5) +
   scale_color_brewer(palette = "Set1") + 
@@ -611,13 +640,20 @@ ggplot(data = augmented_data_for_selected_genes,
        color = "Cluster number", 
        subtitle = "Clustering on lineage specific genes", 
        shape = "Cells",
-       x = "CD34 expression", 
-       y = "HBB expression") + 
+       x = "log10(CD34 expression)", 
+       y = "log10(HBB expression)") + 
   scale_y_log10() +
   scale_x_log10() + 
   theme_minimal() + 
   theme(plot.title = element_text(hjust = 0.5)) + 
   theme(plot.subtitle = element_text(hjust = 0.5))
+
+plot_kmeans
+
+ggsave(plot = plot_kmeans, 
+       file = here("images/plot_kmeans4_all_cells.png"), 
+                   width = 5, 
+                   height = 5)
 ```
 
 We clearly see a clustering pattern here, where CD34 is increased in the HSC compartment, whereas HBB is enhanced in the the erythroid conmpartment. The monocytic and granulocytic progenitors express neither.

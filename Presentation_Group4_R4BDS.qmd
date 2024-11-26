@@ -40,22 +40,30 @@ format: revealjs
 
 This is some text
 
-## Exploratory Data Analysis
+## Sample compositions
 
-This is some text
+![](images/plot_cell_fraction_plot.png)
 
-## Results: Some Finding 1
+![](images/plot_mutations_across_samples.png)
 
-This is some text
+## Distribution of counts
 
-## Results: Some Finding 2
+Nithiya's histograms of count distribution.
 
-This is some text
+## Clustering using PCA on all cells and on HSC
 
-## Results: Some Finding 3 or already Discussion
+![](images/pca_plots_combined.png)
 
-This is some text
+## Clustering analysis using K-means (k = 4) and UMAP (Thea´s creation)
 
-## Discussion: Final Thoughts and Outlook
+![](images/plot_kmeans4_all_cells.png)
 
-This is some text
+## Differential gene expression: All samples and HSC
+
+Edir's analyses
+
+## Differential gene expression across the different cell populations - MDS vs. HD
+
+The figure we talked about Edir.
+
+I think that we could just discuss the outlooks by looking at the figure
