@@ -250,6 +250,8 @@ We need to read in the count data and the sample data for all and then run the D
 And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
 
 ```{r}
+
+
 sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))  
 
 count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
@@ -257,13 +259,11 @@ count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
 
 First we need to convert each observation of the variable `sample` to the variable `id` that will be used for rownames.
 
-
 ```{r}
 sample_data <- sample_data |>   
   mutate("id" = sample) |>    
   column_to_rownames(var = "id")
 ```
-
 
 And then check if the rownames of sample_data is equal to column names in count_data.
 
@@ -302,9 +302,7 @@ Extracting the data from the PCA transformation
 ```{r}
 pca_all_cells <- plotPCA(object = dds_object, intgroup = "diagnosis")
 
-df_pca_all_cells <- pca_all_cells[[1]]
-
-
+df_pca_all_cells <- data.frame(pca_all_cells[[1]])
 
 df_pca_all_cells <- df_pca_all_cells |> 
   mutate(sample = name) |> 
@@ -312,12 +310,15 @@ df_pca_all_cells <- df_pca_all_cells |>
 ```
 
 We join with the sample data on name = sample to get the cell fraction and diagnosis
+
 ```{r}
 df_pca_all_cells_joined <- df_pca_all_cells |> 
   full_join(y = sample_data,
             by = "sample")
 ```
+
 Plotting all cells with VST transformation
+
 ```{r}
 pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined, 
                             mapping = aes(x = PC1, 
@@ -333,12 +334,9 @@ pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined,
   theme_minimal()
 ```
 
-
-
-
 ### PCA of HSC only
 
-We need to read in the count data and the sample data for all, select for HSC and run the DESeq2 algorithm. 
+We need to read in the count data and the sample data for all, select for HSC and run the DESeq2 algorithm.
 
 And load data `count_data` which is the count matrix and `sample_data` which is the sample data.
 
@@ -347,8 +345,6 @@ sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
 
 count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
 ```
-
-
 
 The aim of this analysis is to perform DGE analysis on samples that only contain HSC. We found a high variation in the gene expression between the different cell fractions in our first analysis. Now, we want to scope fully on HSC, as these are the biologically most important cells for MDS.
 
@@ -527,7 +523,6 @@ So firstly we run or dds_object through the `DESeq` algorithm.
 
 ```{r}
 dds_object_hsc_only <- DESeq(dds_object_hsc_only)
-
 ```
 
 Runningt variance stabilizing transformation on our object.
@@ -541,7 +536,7 @@ Extracting the data from the `vst_transformed` object, which is a list and from 
 ```{r}
 pca_data <- plotPCA(vst_transformed, intgroup = "diagnosis")
 
-pca_data_for_plot <- pca_data[[1]]
+pca_data_for_plot <- data.frame(pca_data[[1]])
 ```
 
 We use these data for plotting
@@ -560,7 +555,6 @@ ggplot(data = pca_data_for_plot,
   scale_fill_brewer(palette = "Set1") + 
   labs(title = "PCA\n HSC samples with VST transformation")
 ```
-
 
 # K-means clustering
 
