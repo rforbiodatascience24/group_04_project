@@ -151,6 +151,8 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
 ### Patching it all together
 mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_frac_plot)
 mutant_plots
+
+
 ```
 
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
@@ -178,7 +180,7 @@ ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status
 
 ## Clustering analysis
 
-### Clustering by principal component analysis on data that have not been normalized using the variance stabilizing transformation. 
+### Clustering by principal component analysis on data that have not been normalized using the variance stabilizing transformation.
 
 Read in the `count_data`.
 
