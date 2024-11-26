@@ -1,0 +1,50 @@
+---
+title: "Histogram, frequency plots"
+author: "Nithiyashri Jayashankar"
+format: html
+editor: visual
+---
+
+```{r}
+packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer")
+install.packages(setdiff(packages, rownames(installed.packages())))
+
+library("here")
+library("tidyverse")
+library("broom")
+library("table1")
+library("ggprism")
+library("patchwork")
+library("RColorBrewer")
+```
+
+```{r}
+normalized <- normalized_counts |>
+  select(where(is.numeric))
+normalized_sums <- rowSums(normalized)
+  
+non_normalized<- count_data |> 
+  select(where(is.numeric))
+non_normalized_sums <-rowSums(non_normalized)
+
+normalized_sums
+non_normalized_sums
+  
+```
+
+```{r}
+joined = cbind(non_normalized_sums, normalized_sums)
+```
+
+```{r}
+pl1 <- ggplot(joined, aes(x=normalized_sums))+
+  geom_histogram()+
+  scale_x_log10()
+
+pl2 <- ggplot(joined, aes(x=non_normalized_sums))+
+  geom_histogram()+
+  scale_x_log10()
+
+pl1
+pl2
+```
