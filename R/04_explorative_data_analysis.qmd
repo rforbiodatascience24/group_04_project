@@ -137,7 +137,6 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
 mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_frac_plot)
 mutant_plots
 
-
 ```
 
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
