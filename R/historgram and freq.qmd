@@ -5,6 +5,8 @@ format: html
 editor: visual
 ---
 
+rm(list=ls())
+
 ```{r}
 packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer")
 install.packages(setdiff(packages, rownames(installed.packages())))
@@ -36,15 +38,32 @@ non_normalized_sums
 joined = cbind(non_normalized_sums, normalized_sums)
 ```
 
+i NEED HELP HERE TO PUT THE 2 PLOTS NEXT TO EACH OTHER SINCE PATCHWORKS IS NOT WORKING FOR SOME REASON FOR ME :(
+
 ```{r}
-pl1 <- ggplot(joined, aes(x=normalized_sums))+
+P1 <- ggplot(joined, aes(x=normalized_sums))+
   geom_histogram()+
   scale_x_log10()
+P1
+```
 
-pl2 <- ggplot(joined, aes(x=non_normalized_sums))+
+```{r}
+P2 <- ggplot(joined, aes(x=non_normalized_sums))+
   geom_histogram()+
   scale_x_log10()
+P2
+```
 
-pl1
-pl2
+```{r}
+library(tibble)
+count_data_new <- tibble::rownames_to_column(count_data, "gene")
+normalized_counts <- normalized_counts |> select(gene, everything())
+
+```
+
+## Geom Density graphs:
+
+```{r}
+grouped_data <- full_data |>
+  group_by(diagnosis)
 ```
