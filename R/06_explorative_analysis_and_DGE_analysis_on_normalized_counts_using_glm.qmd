@@ -1,0 +1,579 @@
+---
+title: "Differential gene expression analysis on hematopoietic stem cells only"
+format: html
+editor: visual
+---
+
+### Load of data and packages
+
+```{r}
+library("DESeq2")
+library("tidyverse")
+library("here")
+library("ggprism")
+library("patchwork")
+library("ggrepel")
+library("broom")
+
+
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
+
+```
+
+The aim of this analysis is to perform DGE analysis on samples that only contain HSC. We found a high variation in the gene expression between the different cell fractions in our first analysis. Now, we want to scope fully on HSC, as these are the biologically most important cells for MDS.
+
+To generate a count matrix with normalized counts we have to apply the DESeq2 analysis on samples that only contain HSC. Hence, we need to filter out data that do not contain `cells == "HSC"`.
+
+We get the sample ID (the one containing GSM....) from the samples that do not contain HSC.
+
+```{r}
+delete_cols <- sample_data |> 
+  filter(!cells == "HSC") 
+
+delete_cols <- delete_cols |> 
+  dplyr::select(sample)
+
+delete_samples <- delete_cols$sample
+
+```
+
+And from the `count_data` we deselect these columns, so that we now only have HSC derived samples in the `count_data`.
+
+```{r}
+count_data <- count_data |> 
+  dplyr::select(-all_of(delete_samples))
+```
+
+We filter for samples that have HSC in the `cells`
+
+```{r}
+sample_data <- sample_data |> 
+  filter(cells == "HSC") 
+```
+
+And convert `count_data` to numeric.
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+```
+
+We then ensure, that the column variable `sample` in `sample_data` will be converted to rownames by the `column_to_rownames` function.
+
+And in the next command we check that they are equal.
+
+```{r}
+sample_data <- sample_data |> 
+  column_to_rownames(var = "sample")
+
+all(rownames(sample_data) == colnames(count_data))
+```
+
+Then we run acquire the DESeq2 object from matrix
+
+```{r}
+dds_object_hsc_only <- DESeqDataSetFromMatrix(countData = count_data, 
+                                              colData = sample_data, 
+                                              design = ~ srsf2 + sf3b1 + diagnosis)
+```
+
+We estimate size factors
+
+```{r}
+dds_object_hsc_only <- estimateSizeFactors(object = dds_object_hsc_only)
+```
+
+And require normalized counts\
+
+```{r}
+norm_counts <- counts(object = dds_object_hsc_only, normalize = TRUE)
+```
+
+Convert to data frame
+
+```{r}
+norm_counts <- data.frame(norm_counts)
+```
+
+Now we have the normalized counts for each sample.
+
+We extract the rownames from the `norm_counts` and use them as values for the new variable `gene` and remove the rownames afterwards.
+
+```{r}
+gene_names <- base::rownames(x = norm_counts)
+
+norm_counts <- norm_counts |> 
+  mutate(gene = gene_names)
+
+base::rownames(norm_counts) <- NULL
+```
+
+Pivoting longer into a new column termed `sample` which contains the sample_id.
+
+```{r}
+counts_long <- norm_counts |> 
+  pivot_longer(cols = contains("GSM"), 
+               names_to = "sample", 
+               values_to = "counts") |> 
+  mutate(counts = round(x = counts, digits = 0))
+```
+
+And we join with sample_data on `sample`, where we firstly need to provide a variable `sample` in the `sample_data`.
+
+```{r}
+sample_id <- rownames(sample_data)
+
+sample_data <- sample_data |> 
+  mutate(sample = sample_id)
+
+base::rownames(sample_data) <- NULL
+```
+
+```{r}
+full_data <- counts_long |> 
+  full_join(sample_data, by = "sample")
+```
+
+# PCA
+
+To make the PCA we need to pivot the data into a wide format
+
+```{r}
+wide_count_data <- full_data |> 
+  pivot_wider(names_from = "gene", values_from = "counts")
+```
+
+And extract and scale the gene counts
+
+```{r}
+count_data_numeric <- wide_count_data |> 
+  dplyr::select(where(is.numeric)) 
+
+count_data_to_keep <- colSums(x = count_data_numeric) > 10
+
+count_data_numeric <- count_data_numeric[, count_data_to_keep]
+
+count_data_scaled <- count_data_numeric |> 
+  scale() 
+```
+
+Doing the PCA
+
+```{r}
+pca_object <- prcomp(x = count_data_scaled)
+```
+
+Using `augment` in `broom` to get the principal components
+
+```{r}
+augmented <- pca_object |> 
+  augment(wide_count_data)
+```
+
+And then we plot the first two principal components
+
+```{r}
+pca_plot_hsc <- ggplot(data = augmented, 
+                       mapping = aes(x = .fittedPC1, 
+                                     y = .fittedPC2, 
+                                     fill = diagnosis)
+) + 
+  geom_point(alpha = 0.7, 
+             size = 6, 
+             shape = 21, 
+             color = "black") + 
+  labs(title = "PCA using normalized counts from HSC samples only ", 
+       x = "PC1", 
+       y = "PC2", 
+       color = "Diagnosis") + 
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1")
+pca_plot_hsc
+```
+
+As we have no evidence of clustering it is not worthwhile to make a scree plot.
+
+# Differential gene expression analysis using data from the DESeq2 analysis.
+
+We run the DESeq function on our deseq_object_hsc_only and then get the estimations using the `results` function.
+
+```{r}
+dds_object_hsc_only <- DESeq(dds_object_hsc_only)
+
+results_hsc_only <- results(object = dds_object_hsc_only, 
+                            contrast = c("diagnosis", "MDS", "HD"), 
+                                         alpha = 0.05)
+```
+
+We convert the results into a dataframe, so that we can work with the coefficients.
+
+```{r}
+hsc_df <- data.frame(results_hsc_only)
+```
+
+And supply the rownames as the variable gene
+
+```{r}
+hsc_df <- hsc_df |> 
+  mutate(gene = rownames(hsc_df))
+```
+
+We use the data from this dataframe to establish a volcano plot where genes with a an adjusted p-value \< 0.000001 have their names displayed.
+
+```{r}
+ggplot(data = hsc_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(0.000001), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = hsc_df |> 
+                     filter(padj < 0.000001
+                            ), 
+                   aes(label = gene), 
+                   max.overlaps = 20000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "Differential gene expression in CD34+ HSC\n between patients with MDS and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.000001\n
+       labelled genes with a significance value below 0.000001")
+```
+
+Looking at tumor microenvironment antigens
+
+```{r}
+tma <- c("CD274", "PDCD1LG2", "IDO1",	"TDO2",	"ARG1",	"ARG2",	"TGFB1",	"CCL22",	"CCL2",	"LGALS3", "LRRC32",	"IL10",	"SIGLEC15",	"BIRC7")
+```
+
+Selecting only these genes from our dataframe
+
+```{r}
+df_tma <- hsc_df |> 
+  filter(gene %in% tma)
+```
+
+Showing how the expression of these genes is comparred to expression of other genes
+
+```{r}
+ggplot(data = hsc_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(0.000001), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = df_tma, aes(label = gene), 
+                   max.overlaps = 10000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "MDS patients vs. healthy donors:\nTumor microenvironment antigens highlighted", 
+       caption = "Red line indicates an adjusted p-value of 0.000001")
+```
+
+Making a volcano plot with the TMA encoding genes only
+
+```{r}
+ggplot(data = df_tma, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_point() +
+  geom_label_repel(aes(label = gene), 
+                   max.overlaps = 100) + 
+  geom_hline(yintercept = -log10(0.05),
+             color = "red") + 
+  theme_prism() +
+  labs(title = "Expression of tumor microenvironment antigens\n in CD34+ HSC from MDS patients and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.05")
+```
+
+# DGE using other tissues
+
+```{r}
+# Loading data from original source
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
+count_data <- read_rds(file = here("data/02_count_data_augments.Rdata"))
+
+#Selecting tissues
+delete_cols_gr <- sample_data |> 
+  filter(!cells == "granulocytic") |>
+  dplyr::select(sample) |>
+  pull()
+
+delete_cols_mo <- sample_data |> 
+  filter(!cells == "monocytic") |>
+  dplyr::select(sample) |>
+  pull()
+
+delete_cols_er <- sample_data |> 
+  filter(!cells == "erythroid") |>
+  dplyr::select(sample) |>
+  pull()
+
+#delete_cols_gr <- delete_cols |> 
+#  dplyr::select(sample)
+
+#delete_samples <- delete_cols$sample
+
+#Selecting count data from tissue
+count_data_gr <- count_data |> 
+  dplyr::select(-all_of(delete_cols_gr)) |>
+  mutate(across(everything(), as.numeric))
+
+count_data_mo <- count_data |> 
+  dplyr::select(-all_of(delete_cols_mo)) |>
+  mutate(across(everything(), as.numeric))
+
+count_data_er <- count_data |> 
+  dplyr::select(-all_of(delete_cols_er)) |>
+  mutate(across(everything(), as.numeric))
+
+#Column to rownames for data
+sample_data_gr <- sample_data |> 
+  filter(cells == "granulocytic") |> 
+  column_to_rownames(var = "sample")
+
+#all(rownames(sample_data_gr) == colnames(count_data_gr)) # TRUE
+
+sample_data_mo <- sample_data |> 
+  filter(cells == "monocytic") |> 
+  column_to_rownames(var = "sample")
+
+#all(rownames(sample_data_mo) == colnames(count_data_mo)) # TRUE
+
+sample_data_er <- sample_data |> 
+  filter(cells == "erythroid") |> 
+  column_to_rownames(var = "sample")
+
+#all(rownames(sample_data_er) == colnames(count_data_er)) # TRUE
+
+#Creating DESeq Dataset - using only diagnosis in the design because sf3b1 and srsf2 are perfectly correlated for this cell type tissues.
+dds_object_gr_only <- DESeqDataSetFromMatrix(countData = count_data_gr, 
+                                              colData = sample_data_gr, 
+                                              design = ~ diagnosis)
+
+dds_object_mo_only <- DESeqDataSetFromMatrix(countData = count_data_mo, 
+                                              colData = sample_data_mo, 
+                                              design = ~ diagnosis)
+
+dds_object_er_only <- DESeqDataSetFromMatrix(countData = count_data_er, 
+                                              colData = sample_data_er, 
+                                              design = ~ diagnosis)
+
+#Estimating the size factors
+dds_object_gr_only <- estimateSizeFactors(object = dds_object_gr_only)
+dds_object_mo_only <- estimateSizeFactors(object = dds_object_mo_only)
+dds_object_er_only <- estimateSizeFactors(object = dds_object_er_only)
+
+#DESeq analysis and CLR transformation
+dds_object_gr_only <- DESeq(dds_object_gr_only)
+dds_object_mo_only <- DESeq(dds_object_mo_only)
+dds_object_er_only <- DESeq(dds_object_er_only)
+
+#Extracting results
+results_gr_only <- results(object = dds_object_gr_only, 
+                                         alpha = 0.05)
+
+results_mo_only <- results(object = dds_object_mo_only, 
+                                         alpha = 0.05)
+
+results_er_only <- results(object = dds_object_er_only, 
+                                         alpha = 0.05)
+
+#Back to DataFrame
+gr_df <- data.frame(results_gr_only) |>
+  mutate(gene = rownames(gr_df))
+
+mo_df <- data.frame(results_mo_only) |>
+  mutate(gene = rownames(mo_df))
+
+er_df <- data.frame(results_er_only) |>
+  mutate(gene = rownames(er_df))
+```
+
+```{r}
+#Granulocytic cells
+ggplot(data = gr_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(0.000001), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = gr_df |> 
+                     filter(padj < 0.000001 & abs(log2FoldChange) > 10
+                            ), 
+                   aes(label = gene), 
+                   max.overlaps = 20000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "Differential gene expression in CD34+ Granulocytic\n between patients with MDS and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.000001\n
+       labelled genes with a significance value below 0.000001")
+```
+
+```{r}
+#Monocytic cells
+p_value <- 0.001
+
+ggplot(data = mo_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(p_value), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = mo_df |> 
+                     filter(padj < p_value #& abs(log2FoldChange) > 7.5
+                            ), 
+                   aes(label = gene), 
+                   max.overlaps = 20000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "Differential gene expression in CD34+ Monocytic\n between patients with MDS and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.001\n
+       labelled genes with a significance value below 0.001")
+```
+
+```{r}
+#Erythroid cells
+p_value <- 0.000001
+
+ggplot(data = er_df, 
+       mapping = aes(x = log2FoldChange, 
+                     y = -log10(padj)
+                     )
+       ) + 
+  geom_hline(yintercept = -log10(p_value), 
+             color = "red") + 
+  geom_point(alpha = 0.1) + 
+  geom_label_repel(data = er_df |> 
+                     filter(padj < p_value & abs(log2FoldChange) > 10
+                            ), 
+                   aes(label = gene), 
+                   max.overlaps = 20000, 
+                   nudge_x = 2) + 
+  theme_prism() + 
+  labs(title = "Differential gene expression in CD34+ Monocytic\n between patients with MDS and healthy donors", 
+       caption = "Red line indicates an adjusted p-value of 0.000001\n
+       labelled genes with a significance value below 0.000001")
+```
+
+# Using the normalized counts to establish a generalized linear model of gene counts
+
+Using a generalized linear model we can model the expression of each `gene` as a dependent on the `diagnosis`. For that we need to apply a model for each gene and thereby we need to make nested dataframe and then map the `lm` function over that one.
+
+We make a nested dataframe where we group on `gene` and then `nest`.
+
+Getting the sum of counts across each gene by grouping on gene and then getting the names of those genes by filtering and using `pull` to acquire these gene names.
+
+Additionally, we have grouped on the `diagnosis` as we in the analysis below make a regression with the diagnosis as the independent variable. As we don't want the counts to be too low in neither `MDS` nor `HD` we require names for genes with a summed counts below 10 for either MDS or HD.
+
+```{r}
+counts_per_gene <- full_data |> 
+  mutate(gene = as.factor(gene))
+
+grouped <- counts_per_gene |> 
+  group_by(gene, diagnosis) |> 
+  summarise(sum = sum(counts)) |> 
+  arrange(sum)
+
+grouped_below_10 <- grouped |> 
+  filter(sum < 10)
+
+names_below10 <- pull(.data = grouped_below_10, var = gene)
+
+
+```
+
+We then make a nested dataframe, where we nest on gene and then remove genes that have a total gene count below 10 `names_below10`.
+
+```{r}
+nested_data <- full_data  |> 
+  group_by(gene) |> 
+  nest() |> 
+  filter(!gene %in% names_below10)
+```
+
+We use the `map` function to apply a linear model to the expression level of each gene with `diagnosis` as the independent variable.
+
+```{r}
+nested_data_model <- nested_data |> 
+  mutate(model_object = map(.x = data, 
+      .f = ~ lm(counts ~ diagnosis, data = .x)))
+```
+
+From this dataframe we now acquire the model objects by applying `tidy` to the variable `model_object` in the dataframe. By including the `conf.int = T` we get the 95 % confidence intervals.
+
+We deselect data, model_object, and filter away observations with Intercept.
+
+```{r}
+nested_data_model <- nested_data_model |> 
+  mutate(tidy = map(.x = model_object, 
+                    .f = ~ tidy(.x, conf.int = T)))
+
+
+nested_data_model <-  nested_data_model |> 
+  select(-c(data, model_object)) |> 
+           unnest(tidy) |> 
+  ungroup()
+
+nested_data_model <- nested_data_model |> 
+  filter(!term == "(Intercept)")
+```
+
+We then adjust the p-value using the `padjust`.
+
+```{r}
+data_model <- nested_data_model |> 
+  mutate(padj = p.adjust(p.value),
+         is.signif = case_when(padj < 0.000001 ~ "Significant", 
+                               padj >= 0.000001 ~ "NS"))
+```
+
+As there are so many genes, we only select those that are significantly differentially expressed, where we apply the same level of significance as earlier - p \< 0.00001
+
+```{r}
+sign_genes <- data_model |> 
+  filter(is.signif == "Significant")
+```
+
+```{r}
+ggplot(data = sign_genes, 
+       mapping = aes(x = estimate, 
+                       y = fct_reorder(gene, estimate))) + 
+  geom_point() + 
+  geom_errorbarh(data = sign_genes, 
+                 aes(xmin = conf.low, 
+                 xmax = conf.high)) + 
+  theme_bw() + 
+  labs(y = "Gene name", 
+       x = "Estimate (95 % CI)", 
+       title = "Estimated expression levels of significantly differentially expressed genes by CD34+ HSC from MDS patients vs. healthy donors") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Making a volcano plot
+
+```{r}
+ggplot(data = data_model, 
+                       mapping = aes(x = estimate, 
+                                     y = -log10(p.value))) +
+  geom_hline(yintercept = -log10(0.000001), color = "red") + 
+  geom_point(alpha = 0.2) +
+  geom_label_repel(data = sign_genes, 
+                   aes(label = gene), 
+                   max.overlaps = Inf) + 
+  labs(title = "Volcano plot of significantly differential expressed genes", 
+         y = "-log10(p.value)", 
+         x = "Estimate", 
+         caption = "Horizontal line at p = 0.0000001") + 
+  theme_prism()
+```
