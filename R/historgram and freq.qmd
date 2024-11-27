@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-rm(list=ls())
+Libraries
 
 ```{r}
 packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer")
@@ -64,6 +64,6 @@ normalized_counts <- normalized_counts |> select(gene, everything())
 ## Geom Density graphs:
 
 ```{r}
-grouped_data <- full_data |>
-  group_by(diagnosis)
+ggplot(full_data, aes(x=gene, fill = diagnosis)) +
+  geom_density()
 ```
