@@ -26,11 +26,11 @@ format: revealjs
 
 -   Two data files - the sample data and the raw count data.
 
-![Flowchart of data aquisition and inital tidying](01_Data_loading.jpg)
+![Flowchart of data aquisition and inital tidying](images/01_Data_loading.jpg)
 
 ## Methods: Gene Mapping, Cleanup and DESeq2 Analysis
 
-![Flowchart of data augmentation](02_Data_augmentation_03_join_fused.jpg)
+![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg)
  
 
 
