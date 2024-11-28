@@ -151,7 +151,20 @@ ggsave(plot = mutant_plots,
                    height = 7)
 ```
 
+
+### Histogram : Gene frequencies
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+
+normalized_counts <- normalized_counts |>
+  mutate(across(everything(), as.numeric))
+
+```
+=======
 We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
+
 
 ## Clustering analysis
 

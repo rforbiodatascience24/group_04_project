@@ -1,0 +1,512 @@
+---
+title: "Exploratory data analysis"
+author: "Group 04"
+format: html
+editor: visual
+---
+
+```{r}
+rm(list=ls()) #remove all variables in the environment
+packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer")
+install.packages(setdiff(packages, rownames(installed.packages())))
+
+library("here")
+library("tidyverse")
+library("broom")
+library("table1")
+library("ggprism")
+library("patchwork")
+library("RColorBrewer")
+
+```
+
+
+## Description of sample data
+
+Data load into `sample_data.`
+
+
+```{r}
+sample_data <- read_tsv(file = here("data/01_cleaned_sample_data.tsv"))
+```
+
+
+Varibles and values in `sample_data` renamed, so they look nicer in tables and plots
+
+
+```{r}
+sample_data <- sample_data |> 
+  dplyr::rename("Diagnosis" = "diagnosis",
+         "Cell fraction" = "cells") |> 
+  mutate(`Cell fraction` = case_when(`Cell fraction` == "erythroid" ~ "Erythroid",
+                                     `Cell fraction` == "granulocytic" ~ "Granulocytic", 
+                                     `Cell fraction` == "HSC" ~ "Hematopoietic", 
+                                     `Cell fraction` == "monocytic" ~ "Monocytic")
+  )
+```
+
+
+Making table with descriptives
+
+
+```{r}
+basic_table <- table1( ~ Diagnosis | `Cell fraction`, 
+                       data = sample_data)
+basic_table
+```
+
+
+And a bar plot describing the distribution of samples across the different diagnoses.
+
+
+```{r}
+cell_fraction_plot <- ggplot(data = sample_data, 
+                             mapping = aes(x = Diagnosis)) + 
+  geom_bar(fill = "cornflowerblue", 
+           color = "black") + 
+  facet_wrap(~ `Cell fraction`) + 
+  theme_prism() +
+  labs(title = "Diagnosis and cell fractions",
+       y = "Number of samples",
+       caption = "HD = healthy donor,\n MDS = myelodysplastic syndrome")
+cell_fraction_plot
+```
+
+
+Here, I have changed the above plot to a stacked plot so it is more concise:
+
+
+```{r}
+cell_fraction_plot <- ggplot(data = sample_data, 
+                             mapping = aes(x = Diagnosis, fill = `Cell fraction`)) + 
+  geom_bar(color = "black",
+           position = "stack", 
+           width = 0.6) +
+  theme_prism() +
+  labs(title = "Cell Fractions within MDS and Healthy donor samples",
+       y = "Number of Samples",
+       x = "Diagnosis",
+       fill = "Cell Fraction",  # Legend title
+       caption = "HD = healthy donor,\nMDS = myelodysplastic syndrome") +
+  theme_minimal() 
+
+
+cell_fraction_plot
+```
+
+
+Making plots to explore the mutational spectrum of the samples. As only MDS samples have the mutations, we filter for patients with MDS.
+
+
+```{r}
+mds_data <- sample_data |> 
+  filter(Diagnosis == "MDS")
+
+###
+srsf2_num_plot <- ggplot(data = mds_data, 
+                         mapping = aes(x = `Cell fraction`,
+                                       fill = srsf2)) + 
+  geom_bar(color = "black") + 
+  theme_prism() +
+  labs(title = "SRSF2 mutations in MDS samples", 
+       y = "Number", 
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, 
+                                   hjust = 0.35), 
+        legend.position = "none") + 
+  scale_fill_brewer(palette = "Set1") 
+
+
+sf3b1_num_plot <- ggplot(data = mds_data, 
+                         mapping = aes(x = `Cell fraction`,
+                                       fill = sf3b1), 
+                         legend.position = "none") + 
+  geom_bar(color = "black") + 
+  theme_prism() +
+  labs(title = "SF3B1 mutations in  MDS samples", 
+       y = "Number", 
+       x = "") + 
+  theme(axis.text.x = element_text(angle = 45, 
+                                   hjust = 0.35), 
+        legend.position = "right") + 
+  scale_fill_brewer(palette = "Set1")
+
+
+
+### Could show the same with fractions
+srsf2_frac_plot <- ggplot(data = mds_data, 
+                          mapping = aes(x = `Cell fraction`,
+                                        fill = srsf2)) + 
+  geom_bar(position = position_fill(), 
+           color = "black") + 
+  theme_prism() +
+  labs(y = "Fraction") + 
+  theme(axis.text.x = element_text(angle = 45, 
+                                   hjust = 0.35), 
+        legend.position = "none") + 
+  scale_fill_brewer(palette = "Set1")
+
+
+sf3b1_frac_plot <- ggplot(data = mds_data, 
+                          mapping = aes(x = `Cell fraction`,
+                                        fill = sf3b1)) + 
+  geom_bar(position = position_fill(), 
+           color = "black") + 
+  theme_prism() +
+  labs(y = "Fraction") + 
+  theme(axis.text.x = element_text(angle = 45, 
+                                   hjust = 0.35), 
+        legend.position = "none") + 
+  scale_fill_brewer(palette = "Set1")
+
+
+### Patching it all together
+mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_frac_plot)
+mutant_plots
+```
+
+
+We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
+
+I Redid the graph based on mutation status just to see which genes are mutated in which fractions
+
+
+```{r}
+mds_mut_data <- mds_data |>
+  rowwise() |>
+  mutate(mut_status = case_when(
+    sf3b1 == "MUT" ~ "sf3b1",
+    srsf2 == "MUT" ~ "srsf2",
+    TRUE ~ NA_character_  
+  )) |>
+  ungroup()
+
+
+ggplot(na.omit(mds_mut_data), aes(x = `Cell fraction`, y = 1, color = mut_status)) +
+  geom_jitter(width = 0.3, height = 0.1) +
+  labs(title = "Mutations Across Cell Fractions",
+       y = "Sample Points", x = "Cell Fraction", color = "Mutation") +
+  theme_linedraw()
+
+```
+
+
+### Histogram : Gene frequencies
+
+
+```{r}
+count_data <- count_data |> 
+  mutate(across(everything(), as.numeric))
+
+normalized_counts <- normalized_counts |>
+  mutate(across(everything(), as.numeric))
+
+```
+
+```{r}
+normalized_sum <- rowSums(normalized_counts)
+```
+
+
+## Clustering analysis
+
+### Clustering by principal component analysis
+
+Read in the `count_data`.
+
+
+```{r}
+count_data <- read_tsv(file = here("data/03_full_data.tsv"))
+```
+
+
+To make the PCA we need the data to be in a wide data format, so we use `pivot_wider` for that.
+
+
+```{r}
+wide_count_data <- count_data |> 
+  pivot_wider(names_from = "gene", values_from = "counts")
+```
+
+
+For a correct PCA, we need to scale the data, which should only be done on the gene-counts, so we deselect, non-count data
+
+
+```{r}
+gene_data <- wide_count_data |> 
+  select(!c(sample:cells))
+```
+
+
+Some genes have a very low count, and it is problematic to apply a z-score if most counts are equal between the samples, so we remove genes, where the total count is below 10. Making vector `keep` with observation with counts \> 10
+
+
+```{r}
+keep <- colSums(gene_data) >10 
+```
+
+
+And the number of genes with more than 10 counts is then `sum(keep)` and the number of genes with 10 counts or less is `sum(!keep)`
+
+We subset the genes with more than 10 counts
+
+
+```{r}
+gene_data <- gene_data[, keep]
+```
+
+
+And scale to make the data ready for PCA
+
+
+```{r}
+gene_data_scaled <- gene_data |> 
+  scale()
+```
+
+
+Perform the principal component analysis, where the PCA object is saved into `pca_object`.
+
+
+```{r}
+pca_object <- prcomp(gene_data_scaled)
+```
+
+
+Next we augment our original count data with the fitted principal components by using the `augment` function provided by `broom` package.
+
+
+```{r}
+augmented <- pca_object |> 
+  broom::augment(wide_count_data)
+```
+
+
+### PCA plot
+
+
+```{r}
+pca_plot_all <- ggplot(data = augmented, 
+                       mapping = aes(x = .fittedPC1, 
+                                     y = .fittedPC2,
+                                     shape = cells, 
+                                     color = diagnosis)
+) + 
+  geom_point(alpha = 0.7, size = 6) + 
+  labs(title = "PCA of all samples", 
+       x = "PC1", 
+       y = "PC2", 
+       shape = "Cell fraction", 
+       color = "Diagnosis") + 
+  theme_prism() + 
+  scale_shape_discrete(name = "Cell fraction", 
+                       labels = c("Erythroid", "Granulocytic", "Hematopoietic", "Monocytic")
+  ) +
+  scale_color_brewer(palette = "Set1")
+pca_plot_all
+```
+
+
+Then we extract the eigenvalues from our `pca_object` to make a scree plot in order to identify how many clusters we should make. From the PCA plot one would suggest three clusters, but a scree-plot could be helpful.
+
+
+```{r}
+eigen <- pca_object |> 
+  broom::tidy("eigenvalues")
+
+scree_all_cell_fractions <- eigen |> 
+  filter(PC <10) |> 
+  ggplot(mapping = aes(x = PC, 
+                       y = percent)) + 
+  geom_col(fill = "cornflowerblue", 
+           color = "black") +  
+  theme_prism() +
+  labs(title = "Variance explained by each principal component", 
+       y = "Fraction of variance explained", 
+       x = "Principal component") +
+  scale_x_continuous(breaks = 1:10) 
+
+scree_all_cell_fractions
+```
+
+
+### PCA of HSC only
+
+
+```{r}
+pca_plot_hsc <- augmented |> 
+  filter(cells == "HSC") |> 
+  ggplot(mapping = aes(x = .fittedPC1, 
+                       y = .fittedPC2, 
+                       fill = diagnosis)
+  ) + 
+  geom_point(shape = 21, 
+             size = 5, 
+             alpha = 0.7)  +
+  labs(title = "PCA of hematopoietic stem cells", 
+       x = "PC1", 
+       y = "PC2") +
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1") 
+pca_plot_hsc
+```
+
+
+We check to see if there is any specific clustering of HSC in patients with MDS, that harbor a mutation in the SRSF2 gene
+
+
+```{r}
+pca_plot_mds_srsf2 <- augmented |> 
+  filter(diagnosis == "MDS" & cells == "HSC") |> 
+  ggplot(mapping = aes(x = .fittedPC1, 
+                       y = .fittedPC2, 
+                       fill = srsf2)
+  ) + 
+  geom_point(shape = 21, 
+             size = 5, 
+             alpha = 0.7)  +
+  labs(title = "PCA of hematopoietic stem cells  - impact of mutation in SRSF2", 
+       x = "PC1", 
+       y = "PC2") +
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1") 
+pca_plot_mds_srsf2
+```
+
+
+We then look at if there is a specific clustering of HSC from MDS patients with a mutation in SF3B1
+
+
+```{r}
+pca_plot_mds_sf3b1 <- augmented |> 
+  filter(diagnosis == "MDS" & cells == "HSC") |> 
+  ggplot(mapping = aes(x = .fittedPC1, 
+                       y = .fittedPC2, 
+                       fill = sf3b1)
+  ) + 
+  geom_point(shape = 21, 
+             size = 5, 
+             alpha = 0.7)  +
+  labs(title = "PCA of hematopoietic stem cells - impact of mutation in SF3B1", 
+       x = "PC1", 
+       y = "PC2") +
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1") 
+pca_plot_mds_sf3b1
+```
+
+
+The gene expression in some samples seem to be affected by the SF3B1 mutation
+
+### PCA of monocytic and granulocytic progenitors in MDS and healthy donors
+
+
+```{r}
+### Monocytic and granulocytic progenitors both HD and MDS
+pca_gran_mono <- augmented |> 
+  filter(cells == "monocytic" | cells == "granulocytic") |> 
+  ggplot(mapping = aes(x = .fittedPC1, 
+                       y = .fittedPC2, 
+                       fill = diagnosis)
+  ) + 
+  geom_point(shape = 21, 
+             size = 5, 
+             alpha = 0.7)  +
+  labs(title = "PCA of granulocytic/monocytic progenitors", 
+       x = "PC1", 
+       y = "PC2") +
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1") 
+pca_gran_mono
+```
+
+
+Some patients have outliers in the granulocytic/monocytic compartment compared to HD
+
+
+```{r}
+pca_ery <- augmented |> 
+  filter(cells == "erythroid") |> 
+  ggplot(mapping = aes(x = .fittedPC1, 
+                       y = .fittedPC2, 
+                       fill = diagnosis)
+  ) + 
+  geom_point(shape = 21, 
+             size = 5, 
+             alpha = 0.7)  +
+  labs(title = "PCA of erythroid progenitors", 
+       x = "PC1", 
+       y = "PC2") +
+  theme_prism() +
+  scale_fill_brewer(palette = "Set1") 
+pca_ery
+```
+
+
+Two patients with MDS clearly have outliers with a differential gene expression in their erythroid progenitors.
+
+# K-means clustering
+
+We test out clustering by the k-means clustering method too. As we have so many dimensions to cluster on we chose certain genes of relevance to the four different cell lines. - HSC: CD34 and KIT - Monocytic: HLA-DRA, CCR2 - Granulocytic: NOS1, CXCL8 - Erythroid: HBB and HBA1
+
+Make a vector with the genes of interest
+
+
+```{r}
+genes_of_interest <- c("CD34", "KIT", "HLA-DRA", "CCR2", "NOS1", "CXCL8", "HBB", "HBA1")
+```
+
+
+Selecting for `genes_of_interest` in the `gene_data_scaled` object.
+
+
+```{r}
+gene_data_scaled <- as.data.frame(gene_data_scaled)
+
+gene_data_scaled_selected_genes <- gene_data_scaled |> 
+  select(all_of(genes_of_interest))
+```
+
+
+Making the model with 4 clusters
+
+
+```{r}
+k_4 <- kmeans(x = gene_data_scaled_selected_genes, centers = 4)
+```
+
+
+Augmenting our dataset
+
+
+```{r}
+augmented_data_for_selected_genes <- k_4 |> 
+  augment(wide_count_data)
+```
+
+
+Plotting the clusters genes
+
+
+```{r}
+ggplot(data = augmented_data_for_selected_genes, 
+       mapping = aes(x = CD34, 
+                     y = HBB,
+                     color = .cluster, 
+                     shape = cells)) + 
+  geom_point(size = 4,
+             alpha = 0.5) + 
+  theme_prism() + 
+  scale_color_brewer(palette = "Set1") + 
+  labs(title = "Kmeans clustering with K = 4", 
+       color = "Cluster number", 
+       subtitle = "Clustering on lineage specific genes") + 
+  scale_y_log10() +
+  scale_x_log10()
+```
+
+
+We clearly see a clustering pattern here, where CD34 is increased in the HSC compartment, whereas HBB is enhanced in the the erythroid conmpartment. The monocytic and granulocytic progenitors express neither.
+
+Probably we need to employ some other form of dimensionality reduction/clustering than k-means.
+
