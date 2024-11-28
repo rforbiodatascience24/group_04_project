@@ -12,7 +12,7 @@ So we need to augment the data, so it will be ready for the analysis.
 
 ```{r}
 rm(list=ls()) #remove all variables in the environment
-packages <- c("tidyverse", "here", "BiocManager")
+packages <- c("tidyverse", "here", "BiocManager", "conflicted")
 install.packages(setdiff(packages, rownames(installed.packages())))
 
 if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
@@ -21,6 +21,7 @@ if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
 
 library("tidyverse")
 library("here")
+library("conflicted")
 ```
 
 Load of count data
@@ -35,6 +36,15 @@ For that we need to load the package `org.Hs.eg.db` from which we can establish 
 
 ```{r}
 library("org.Hs.eg.db")
+```
+
+Prefer to use `dplyr` functions instead of `AnnotationDbiAnnotationDbi` in `org.Hs.eg.db`.
+
+```{r}
+conflict_prefer_all(winner = "dplyr", 
+                    losers = "AnnotationDbi")
+
+conflict_prefer(name = "filter", winner = "dplyr", losers = "stats")
 ```
 
 We notice that the `GeneID` variable is numeric, whereas it should be a character, so we convert it accordingly.
@@ -64,7 +74,8 @@ symbols_df <- data.frame(symbols)
 As we want to join the rownames in `symbols_df` with `GeneID` in `count_data` we need to extract the rownames from `symbols_df` and make it a variable termed `GeneID`.
 
 ```{r}
-rownames <- symbols_df$symbols
+rownames <- symbols_df |>
+  pull(symbols)
 
 count_data <- count_data |> 
   mutate(gene = rownames) |> 
@@ -74,7 +85,10 @@ count_data <- count_data |>
 We check the number of ENTREZIDs that were not converted above and thus are `NA` in the `gene`variable.
 
 ```{r}
-sum(is.na(count_data$gene))
+count_data |>
+  select(gene) |>
+  is.na() |>
+  sum()
 ```
 
 So of the `nrow(count_data)` rows in our `count_data`, `sum(is.na(count_data$gene))` are not converted to a gene symbol. As these could corrupt our later analysis we chose to remove observations - e.g. gene names that have `NA` in their `gene`
@@ -88,7 +102,7 @@ Next thing is to remove `GeneID` and provide `gene` as rownames for the `DESeq2`
 
 ```{r}
 count_data <- count_data |> 
-  dplyr::select(-GeneID)
+  select(-GeneID)
 
 ```
 
@@ -98,9 +112,9 @@ We find the name of the duplicate gene by the code below:
 
 ```{r}
 duplicate_gene <- count_data |> 
-  filter(duplicated(x = count_data$gene)) |> 
-  dplyr::select(gene)
-
+  filter(duplicated(gene)) |>
+  pull(gene)
+  
 duplicate_gene
 ```
 
@@ -117,7 +131,7 @@ We decide to use the mean of the counts as the amount of counts so we use `colMe
 
 ```{r}
 trnav_cac_mean <- trnav_cac |> 
-  dplyr::select(where(is.numeric)) |> 
+  select(where(is.numeric)) |> 
   colMeans() |> 
   round(digits = 0) 
 ```
