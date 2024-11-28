@@ -28,13 +28,12 @@ format: revealjs
 
 ![Flowchart of data aquisition and inital tidying](01_Data_loading.jpg)
 
-## Methods: Gene Mapping and Cleanup
+## Methods: Gene Mapping, Cleanup and DESeq2 Analysis
 
-![Flowchart of data augmentation](02_Data_augmentation.jpg)
+![Flowchart of data augmentation](02_Data_augmentation_03_join_fused.jpg)
+ 
 
-## Data Preparation for DESeq2 Analysis
 
-![Flowchart of joining tables, and looking up gene names](03_Data_join.jpg)
 
 ## Transforming and Joining Data (maybe we don't need that as we kinda cover it in the previous slided)
 
