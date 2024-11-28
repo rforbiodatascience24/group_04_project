@@ -8,13 +8,23 @@ format: revealjs
 
 ## Introduction {data-background="IMG_0825.JPG"}
 
-This is some text 
--RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells in myelodysplastic syndrome (MDS) patients and healthy controls (82) 
--Expression analysis conducted through high-throughput RNA sequencing 
--Objective of Paper: Analyzing the impact of SF3B1, SRSF2, and U2AF1 splicing factor mutations on pre-mRNA splicing and pathways 
--Objective of Group Project: ???
+<div>
 
-## Methods: Data Retrieval and Cleaning
+-   The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.
+-   The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.
+-   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms.
+
+![From: https://www.sigmaaldrich.com/](images/clipboard-1241564374.png)
+
+</div>
+
+##  
+
+## Materials and methods: Data Retrieval and Cleaning
+
+-   Data identified on the Gene Expression Omnibus server: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19429>
+
+-   Two data files - the sample data and the raw count data.
 
 ![Flowchart of data aquisition and inital tidying](01_Data_loading.jpg)
 
@@ -30,22 +40,30 @@ This is some text
 
 This is some text
 
-## Exploratory Data Analysis
+## Sample compositions
 
-This is some text
+![](images/plot_cell_fraction_plot.png)
 
-## Results: Some Finding 1
+![](images/plot_mutations_across_samples.png)
 
-This is some text
+## Distribution of counts
 
-## Results: Some Finding 2
+Nithiya's histograms of count distribution.
 
-This is some text
+## Clustering using PCA on all cells and on HSC
 
-## Results: Some Finding 3 or already Discussion
+![](images/pca_plots_combined.png)
 
-This is some text
+## Clustering analysis using K-means (k = 4) and UMAP (Thea´s creation)
 
-## Discussion: Final Thoughts and Outlook
+![](images/plot_kmeans4_all_cells.png)
 
-This is some text
+## Differential gene expression: All samples and HSC
+
+Edir's analyses
+
+## Differential gene expression across the different cell populations - MDS vs. HD
+
+The figure we talked about Edir.
+
+I think that we could just discuss the outlooks by looking at the figure
