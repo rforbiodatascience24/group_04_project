@@ -35,16 +35,17 @@ Firstly, we need to map the identifier in the `GeneID` variable with a proper ge
 For that we need to load the package `org.Hs.eg.db` from which we can establish a dataframe and join this with our `count_data` to get proper gene names. Importantly, the `org.Hs.eg.db` has several conflicts with `dplyr`, for example the `select` function.
 
 ```{r}
+conflict_prefer("setdiff", "base")
 library("org.Hs.eg.db")
 ```
 
-Prefer to use `dplyr` functions instead of `AnnotationDbiAnnotationDbi` in `org.Hs.eg.db`.
+Prefer to use `dplyr` functions instead of `AnnotationDbi` in `org.Hs.eg.db`.
 
 ```{r}
-#conflict_prefer_all(winner = "dplyr", 
-#                    losers = "AnnotationDbi")
+conflict_prefer_all(winner = "dplyr", 
+                    losers = "AnnotationDbi")
 
-#conflict_prefer(name = "filter", winner = "dplyr", losers = "stats")
+conflict_prefer(name = "filter", winner = "dplyr", losers = "stats")
 ```
 
 We notice that the `GeneID` variable is numeric, whereas it should be a character, so we convert it accordingly.
