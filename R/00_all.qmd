@@ -11,7 +11,7 @@ editor: visual
 #Check if libraries have to be installed
 rm(list=ls()) # remove all variables in the environment
 packages <- c("quarto")
-install.packages(setdiff(packages, rownames(installed.packages()))) 
+install.packages(base::setdiff(packages, rownames(installed.packages()))) 
 
 
 # Load required library

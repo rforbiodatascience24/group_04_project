@@ -106,7 +106,7 @@ Clearing memory to contain the count files
 rm(list = ls())
 ```
 
-Loading the count data
+Loading the count data. Upon inspection we find that the data is already tidy so we save it.
 
 ```{r}
 
@@ -122,10 +122,4 @@ if(file.exists(data_path_count)){
 }
 
 #View(counts)
-```
-
-Upon inspection we find that the data is already tidy so we save it
-
-```{r}
-write_tsv(x = counts, file = here("data/01_cleaned_count_data.tsv"))
 ```
