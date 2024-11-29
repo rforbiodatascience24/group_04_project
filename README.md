@@ -1,10 +1,14 @@
 # group_04_project
 ## Project Contributors
-s225019 - TheaRosholmDTU
-s243564 - edircoli
-s244356 - Nitjay-DTU
-s233043 - TilNelissen
-s242223 - holmeren1983
+
+| Student number  | GitHub Username   |
+|-----------|---------------------|
+| s225019   | TheaRosholmDTU     |
+| s243564   | edircoli           |
+| s244356   | Nitjay-DTU         |
+| s233043   | TilNelissen        |
+| s242223   | holmeren1983       |
+
 
 ## Data
 This repository contains the R4BDS final project in which the dataset of the following publication was analyzed: "*RNA sequencing of bone marrow CD34+ hematopoietic stem and progenitor cells from patients with myelodysplastic syndrome and healthy controls*", identifer GSE114922.
