@@ -10,22 +10,24 @@ editor: visual
 ```{r}
 #Check if libraries have to be installed
 rm(list=ls()) # remove all variables in the environment
-packages <- c("quarto")
+packages <- c("here", "tidyverse")
 install.packages(base::setdiff(packages, rownames(installed.packages()))) 
 
 
 # Load required library
-library(quarto)
+library("here")
 ```
 
 ```{r}
-# List of .qmd files
-files <- c("01_load_and_tidy.qmd",
-           "02_augment_of_count_data.qmd",
-           "03_augment_and_join_of_data_frames.qmd",
-           "04_explorative_data_analysis.qmd")
+# List of all the files created
+files <- c("R/01_load_and_tidy.qmd",
+           "R/02_augment_of_count_data.qmd",
+           "R/03_augment_and_join_of_data_frames.qmd",
+           "R/04_explorative_data_analysis.qmd")
 
 # Render all files
-purrr::walk(files, quarto::quarto_render)
+lapply(files, function(file) {
+  rmarkdown::render(here(file), output_dir = here("results"))
+})
 
 ```
