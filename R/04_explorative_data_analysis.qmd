@@ -154,9 +154,11 @@ ggsave(plot = mutant_plots,
 ### Histogram : Gene frequencies
 
 ```{r}
+count_data <- readRDS(file = here("data/02_count_data_augments.Rdata"))
 count_data <- count_data |> 
   mutate(across(everything(), as.numeric))
 
+normalized_counts <- readRDS(file = here("data/03_normalized_counts.Rdata"))
 normalized_counts <- normalized_counts |>
   mutate(across(everything(), as.numeric))
 
