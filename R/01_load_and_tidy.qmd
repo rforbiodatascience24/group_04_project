@@ -16,7 +16,7 @@ The packages used for this file:
 ```{r}
 rm(list=ls()) # remove all variables in the environment
 packages <- c("tidyverse", "here")
-install.packages(setdiff(packages, rownames(installed.packages())))  
+install.packages(base::setdiff(packages, rownames(installed.packages())))  
 
 library("tidyverse")
 library("here")

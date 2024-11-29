@@ -13,7 +13,7 @@ So we need to augment the data, so it will be ready for the analysis.
 ```{r}
 rm(list=ls()) #remove all variables in the environment
 packages <- c("tidyverse", "here", "BiocManager", "conflicted")
-install.packages(setdiff(packages, rownames(installed.packages())))
+install.packages(base::setdiff(packages, rownames(installed.packages())))
 
 if (!("org.Hs.eg.db" %in% rownames(installed.packages()))) {
   BiocManager::install("org.Hs.eg.db")

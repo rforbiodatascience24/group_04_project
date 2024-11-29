@@ -8,7 +8,7 @@ editor: visual
 ```{r}
 rm(list=ls()) #remove all variables in the environment
 packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "DESeq2")
-install.packages(setdiff(packages, rownames(installed.packages())))
+install.packages(base::setdiff(packages, rownames(installed.packages())))
 
 library("here")
 library("tidyverse")
@@ -151,7 +151,6 @@ ggsave(plot = mutant_plots,
                    height = 7)
 ```
 
-
 ### Histogram : Gene frequencies
 
 ```{r}
@@ -162,9 +161,8 @@ normalized_counts <- normalized_counts |>
   mutate(across(everything(), as.numeric))
 
 ```
-=======
-We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
 
+======= We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
 
 ## Clustering analysis
 
