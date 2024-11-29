@@ -98,6 +98,8 @@ For consistency the rownames are removed
 
 ```{r}
 base::rownames(normalized_counts) <- NULL
+
+write_rds(x = normalized_counts, file = here("data/03_normalized_counts.Rdata"))
 ```
 
 ```{r}
