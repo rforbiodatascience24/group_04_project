@@ -121,7 +121,7 @@ if(file.exists(data_path_count)){
           file = str_c(data_path_count))
 }
 
-View(counts)
+#View(counts)
 ```
 
 Upon inspection we find that the data is already tidy so we save it
