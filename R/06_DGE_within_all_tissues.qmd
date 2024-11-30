@@ -162,7 +162,7 @@ full_df <- full_df |>
                          TRUE ~ "Neutral"))
 
 
-full_df |>
+volcano_plot <- full_df |>
   ggplot(mapping = aes(x = log2FoldChange, 
                        y = -log10(padj),
                        color = dge
@@ -176,31 +176,36 @@ full_df |>
   geom_point(alpha = 0.5) +
   
   #Overexpression
-  geom_text_repel(data = full_df |>
+  geom_label_repel(data = full_df |>
                     filter(dge == "Over"),
                   aes(label = gene),
-                  nudge_x = 1,
-                  colour = "blue") +
+                  #nudge_x = 0.2,
+                  #nudge_y = 0.2,
+                  colour = "blue",
+                  size = 3) +
   #Subexpression
-  geom_text_repel(data = full_df |>
+  geom_label_repel(data = full_df |>
                     filter(dge == "Under"),
                   aes(label = gene),
-                  nudge_x = 1,
-                  colour = "red") +
+                  #nudge_x = 0.2,
+                  #nudge_y = 0.2,
+                  colour = "red",
+                  size = 3) +
   
   scale_color_manual(values = c("Over" = "blue",
                                 "Under" = "red",
                                 "Neutral" = "black")) +
   theme_prism() + 
   theme(legend.position = "none") +
-  labs(title = "DGE on different tissue between patients with MDS and healthy donors",
+  labs(title = "DGE on different tissue between patients
+       with MDS and healthy donors",
        caption = "Adjusted p-value threshold of 0.0001\n
        Colored genes with absolute log2FC greater than 5") +
   facet_wrap(~tissue)
 ```
 
 ```{r}
-full_df |>
+scatter_plot <- full_df |>
   filter(!dge == "Neutral") |>
   ggplot(aes(y = log2FoldChange,
              x = 1,
@@ -211,25 +216,42 @@ full_df |>
   geom_hline(yintercept = 0,
              linetype = "dashed") +
   
-  geom_text(aes(x = 1.5, y = 0, label = "Overexpressed"), vjust = -1, color = "blue") +
+  geom_text(aes(x = 1.5, y = 0, label = "Overexpressed"), vjust = -1, color = "blue", size = 2.5) +
   
-  geom_text(aes(x = 1.5, y = 0, label = "Underexpressed"), vjust = 1.8, color = "red") +
+  geom_text(aes(x = 1.5, y = 0, label = "Underexpressed"), vjust = 1.8, color = "red", size = 2.5) +
   
   geom_text_repel(data = full_df |>
-                    filter(dge == "Over"),
+                    filter(dge == "Over" & log2FoldChange > 15),
                   aes(label = gene),
-                  #nudge_x = 0.1,
+                  #nudge_x = 1,
+                  #nudge_y = 1,
                   colour = "blue",
-                  size = 3) +
+                  size = 2.4,
+                  max.overlaps = 50) +
+  
+  geom_text_repel(data = full_df |>
+                    filter(dge == "Over" & log2FoldChange <= 15),
+                  aes(label = gene),
+                  #nudge_x = 1,
+                  #nudge_y = 1,
+                  colour = "blue",
+                  size = 2.4,
+                  max.overlaps = 10) +
   
   geom_text_repel(data = full_df |>
                     filter(dge == "Under"),
                   aes(label = gene),
-                  #nudge_x = 0.1,
+                  #nudge_x = 1,
                   colour = "red",
-                  size = 3) +
+                  size = 2.4,
+                  max.overlaps = 10) +
   xlim(0, 2) +
   facet_wrap(~tissue, ncol = 4) +
-  theme(legend.position = "none") +
+  theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   labs(title = "Significant DGE on different tissues")
+```
+
+```{r}
+#ggsave("plot_DGE_volcano.png", plot = volcano_plot)
+#ggsave("plot_DGE_scatter.png", plot = scatter_plot)
 ```
