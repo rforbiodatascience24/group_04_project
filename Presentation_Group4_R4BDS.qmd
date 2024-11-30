@@ -18,7 +18,7 @@ format: revealjs
 
 </div>
 
-##  
+## 
 
 ## Materials and methods: Data Retrieval and Cleaning
 
@@ -31,9 +31,6 @@ format: revealjs
 ## Methods: Gene Mapping, Cleanup and DESeq2 Analysis
 
 ![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg)
- 
-
-
 
 ## Transforming and Joining Data (maybe we don't need that as we kinda cover it in the previous slided)
 
@@ -59,10 +56,8 @@ Nithiya's histograms of count distribution.
 
 ## Differential gene expression: All samples and HSC
 
-Edir's analyses
+![](images/plot_DGE_volcano.png)
 
 ## Differential gene expression across the different cell populations - MDS vs. HD
 
-The figure we talked about Edir.
-
-I think that we could just discuss the outlooks by looking at the figure
+![](images/plot_DGE_scatter.png)
