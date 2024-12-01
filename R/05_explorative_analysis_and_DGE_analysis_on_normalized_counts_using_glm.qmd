@@ -194,7 +194,7 @@ pca_plot_hsc
 
 As we have no evidence of clustering it is not worthwhile to make a scree plot.
 
-# Differential gene expression analysis using data from the DESeq2 analysis. 
+# Differential gene expression analysis using data from the DESeq2 analysis.
 
 We run the DESeq function on our deseq_object_hsc_only and then get the estimations using the `results` function.
 
@@ -292,7 +292,7 @@ ggplot(data = df_tma,
        caption = "Red line indicates an adjusted p-value of 0.05")
 ```
 
-# Using the normalized counts to establish a generalized linear model of gene counts 
+# Using the normalized counts to establish a generalized linear model of gene counts
 
 Using a generalized linear model we can model the expression of each `gene` as a dependent on the `diagnosis`. For that we need to apply a model for each gene and thereby we need to make nested dataframe and then map the `lm` function over that one.
 

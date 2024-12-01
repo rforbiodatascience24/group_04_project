@@ -30,7 +30,6 @@ format: revealjs
 
 ![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg)
 
-
 ## Sample compositions
 
 ![](images/plot_cell_fraction_plot.png)

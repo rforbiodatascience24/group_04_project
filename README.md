@@ -20,4 +20,6 @@ The aim of this project is to showcase the tools thaught in the course R4BDS whi
 data retrieval, data tidying, joining of dataframes, statistical analysis of data, modelling of data and visualization of data with ggplot etc. 
 Additionally, collaborative working via a version control service like github is achieved.
 
+## Scientific aim of the project
+The myelodysplastic syndromes (MDS) are cancer diseases of the hematopoietic stem cells in the bone marrow. Identification of differences in gene expression between patient hematopoietic cell lines and healthy donor hematopoietic cell lines could reveal potential drugable targets in MDS. Hence, we performed differential gene expression analyses on the dataset outlines above and show which genes are up- and downregulated in both hematopoietic stem cells and erythroid, granulocytic and monocytic progenitors. 
 
