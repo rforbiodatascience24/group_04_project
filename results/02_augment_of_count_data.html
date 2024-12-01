@@ -375,12 +375,13 @@ if (!(&quot;org.Hs.eg.db&quot; %in% rownames(installed.packages()))) {
 library(&quot;tidyverse&quot;)
 library(&quot;here&quot;)
 library(&quot;conflicted&quot;)</code></pre>
+<pre><code>## Warning: pakke &#39;conflicted&#39; blev bygget under R version 4.2.3</code></pre>
 <p>Load of count data</p>
 <pre class="r"><code>count_data &lt;- read_tsv(file = here(&quot;data/01_cleaned_count_data.tsv&quot;))</code></pre>
 <pre><code>## Rows: 39376 Columns: 132
-## ── Column specification ───────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
-## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM31672...
+## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM3167298, GSM3167300, GSM3167302, GSM3167303, GSM3167...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
@@ -396,82 +397,80 @@ for example the <code>select</code> function.</p>
 <pre class="r"><code>conflict_prefer(&quot;setdiff&quot;, &quot;base&quot;)</code></pre>
 <pre><code>## [conflicted] Will prefer base::setdiff over any other package.</code></pre>
 <pre class="r"><code>library(&quot;org.Hs.eg.db&quot;)</code></pre>
-<pre><code>## Loading required package: AnnotationDbi
-## Loading required package: stats4
-## Loading required package: BiocGenerics
+<pre><code>## Indlæser krævet pakke: AnnotationDbi
+## Indlæser krævet pakke: stats4
+## Indlæser krævet pakke: BiocGenerics
 ## 
-## Attaching package: &#39;BiocGenerics&#39;
+## Vedhæfter pakke: &#39;BiocGenerics&#39;
 ## 
-## The following objects are masked from &#39;package:lubridate&#39;:
+## De følgende objekter er maskerede fra &#39;package:lubridate&#39;:
 ## 
 ##     intersect, setdiff, union
 ## 
-## The following objects are masked from &#39;package:dplyr&#39;:
+## De følgende objekter er maskerede fra &#39;package:dplyr&#39;:
 ## 
 ##     combine, intersect, setdiff, union
 ## 
-## The following objects are masked from &#39;package:stats&#39;:
+## De følgende objekter er maskerede fra &#39;package:stats&#39;:
 ## 
 ##     IQR, mad, sd, var, xtabs
 ## 
-## The following objects are masked from &#39;package:base&#39;:
+## De følgende objekter er maskerede fra &#39;package:base&#39;:
 ## 
-##     anyDuplicated, aperm, append, as.data.frame, basename, cbind, colnames, dirname,
-##     do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl, intersect,
-##     is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort, table,
-##     tapply, union, unique, unsplit, which.max, which.min
+##     anyDuplicated, aperm, append, as.data.frame, basename, cbind, colnames, dirname, do.call, duplicated, eval, evalq, Filter, Find,
+##     get, grep, grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax, pmax.int, pmin, pmin.int,
+##     Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply, union, unique, unsplit, which.max, which.min
 ## 
-## Loading required package: Biobase
+## Indlæser krævet pakke: Biobase
 ## Welcome to Bioconductor
 ## 
-##     Vignettes contain introductory material; view with &#39;browseVignettes()&#39;. To cite
-##     Bioconductor, see &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.
+##     Vignettes contain introductory material; view with &#39;browseVignettes()&#39;. To cite Bioconductor, see &#39;citation(&quot;Biobase&quot;)&#39;, and for
+##     packages &#39;citation(&quot;pkgname&quot;)&#39;.
 ## 
-## Loading required package: IRanges
-## Loading required package: S4Vectors
+## Indlæser krævet pakke: IRanges
+## Indlæser krævet pakke: S4Vectors
 ## 
-## Attaching package: &#39;S4Vectors&#39;
+## Vedhæfter pakke: &#39;S4Vectors&#39;
 ## 
-## The following objects are masked from &#39;package:lubridate&#39;:
+## De følgende objekter er maskerede fra &#39;package:lubridate&#39;:
 ## 
 ##     second, second&lt;-
 ## 
-## The following objects are masked from &#39;package:dplyr&#39;:
+## De følgende objekter er maskerede fra &#39;package:dplyr&#39;:
 ## 
 ##     first, rename
 ## 
-## The following object is masked from &#39;package:tidyr&#39;:
+## Det følgende objekt er maskeret fra &#39;package:tidyr&#39;:
 ## 
 ##     expand
 ## 
-## The following object is masked from &#39;package:utils&#39;:
-## 
-##     findMatches
-## 
-## The following objects are masked from &#39;package:base&#39;:
+## De følgende objekter er maskerede fra &#39;package:base&#39;:
 ## 
 ##     expand.grid, I, unname
 ## 
 ## 
-## Attaching package: &#39;IRanges&#39;
+## Vedhæfter pakke: &#39;IRanges&#39;
 ## 
-## The following object is masked from &#39;package:lubridate&#39;:
+## Det følgende objekt er maskeret fra &#39;package:lubridate&#39;:
 ## 
 ##     %within%
 ## 
-## The following objects are masked from &#39;package:dplyr&#39;:
+## De følgende objekter er maskerede fra &#39;package:dplyr&#39;:
 ## 
 ##     collapse, desc, slice
 ## 
-## The following object is masked from &#39;package:purrr&#39;:
+## Det følgende objekt er maskeret fra &#39;package:purrr&#39;:
 ## 
 ##     reduce
 ## 
+## Det følgende objekt er maskeret fra &#39;package:grDevices&#39;:
 ## 
-## Attaching package: &#39;AnnotationDbi&#39;
+##     windows
 ## 
-## The following object is masked from &#39;package:dplyr&#39;:
+## 
+## Vedhæfter pakke: &#39;AnnotationDbi&#39;
+## 
+## Det følgende objekt er maskeret fra &#39;package:dplyr&#39;:
 ## 
 ##     select</code></pre>
 <p>Prefer to use <code>dplyr</code> functions instead of
@@ -520,7 +519,7 @@ thus are <code>NA</code> in the <code>gene</code>variable.</p>
   select(gene) |&gt;
   is.na() |&gt;
   sum()</code></pre>
-<pre><code>## [1] 1641</code></pre>
+<pre><code>## [1] 1610</code></pre>
 <p>So of the <code>nrow(count_data)</code> rows in our
 <code>count_data</code>, <code>sum(is.na(count_data$gene))</code> are
 not converted to a gene symbol. As these could corrupt our later

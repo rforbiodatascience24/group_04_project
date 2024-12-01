@@ -367,35 +367,32 @@ packages &lt;- c(&quot;tidyverse&quot;, &quot;here&quot;, &quot;DESeq2&quot;)
 install.packages(base::setdiff(packages, rownames(installed.packages())))
 
 library(&quot;DESeq2&quot;)</code></pre>
-<pre><code>## Loading required package: GenomicRanges</code></pre>
-<pre><code>## Loading required package: GenomeInfoDb</code></pre>
-<pre><code>## Loading required package: SummarizedExperiment</code></pre>
-<pre><code>## Loading required package: MatrixGenerics</code></pre>
-<pre><code>## Loading required package: matrixStats</code></pre>
+<pre><code>## Indlæser krævet pakke: GenomicRanges</code></pre>
+<pre><code>## Indlæser krævet pakke: GenomeInfoDb</code></pre>
+<pre><code>## Indlæser krævet pakke: SummarizedExperiment</code></pre>
+<pre><code>## Indlæser krævet pakke: MatrixGenerics</code></pre>
+<pre><code>## Indlæser krævet pakke: matrixStats</code></pre>
+<pre><code>## Warning: pakke &#39;matrixStats&#39; blev bygget under R version 4.2.3</code></pre>
 <pre><code>## 
-## Attaching package: &#39;matrixStats&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:Biobase&#39;:
+## Vedhæfter pakke: &#39;matrixStats&#39;</code></pre>
+<pre><code>## De følgende objekter er maskerede fra &#39;package:Biobase&#39;:
 ## 
 ##     anyMissing, rowMedians</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+<pre><code>## Det følgende objekt er maskeret fra &#39;package:dplyr&#39;:
 ## 
 ##     count</code></pre>
 <pre><code>## 
-## Attaching package: &#39;MatrixGenerics&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:matrixStats&#39;:
+## Vedhæfter pakke: &#39;MatrixGenerics&#39;</code></pre>
+<pre><code>## De følgende objekter er maskerede fra &#39;package:matrixStats&#39;:
 ## 
-##     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse, colCounts, colCummaxs,
-##     colCummins, colCumprods, colCumsums, colDiffs, colIQRDiffs, colIQRs, colLogSumExps,
-##     colMadDiffs, colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats, colProds,
-##     colQuantiles, colRanges, colRanks, colSdDiffs, colSds, colSums2, colTabulates,
-##     colVarDiffs, colVars, colWeightedMads, colWeightedMeans, colWeightedMedians,
-##     colWeightedSds, colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet,
-##     rowCollapse, rowCounts, rowCummaxs, rowCummins, rowCumprods, rowCumsums, rowDiffs,
-##     rowIQRDiffs, rowIQRs, rowLogSumExps, rowMadDiffs, rowMads, rowMaxs, rowMeans2,
-##     rowMedians, rowMins, rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks,
-##     rowSdDiffs, rowSds, rowSums2, rowTabulates, rowVarDiffs, rowVars, rowWeightedMads,
-##     rowWeightedMeans, rowWeightedMedians, rowWeightedSds, rowWeightedVars</code></pre>
-<pre><code>## The following object is masked from &#39;package:Biobase&#39;:
+##     colAlls, colAnyNAs, colAnys, colAvgsPerRowSet, colCollapse, colCounts, colCummaxs, colCummins, colCumprods, colCumsums, colDiffs,
+##     colIQRDiffs, colIQRs, colLogSumExps, colMadDiffs, colMads, colMaxs, colMeans2, colMedians, colMins, colOrderStats, colProds,
+##     colQuantiles, colRanges, colRanks, colSdDiffs, colSds, colSums2, colTabulates, colVarDiffs, colVars, colWeightedMads,
+##     colWeightedMeans, colWeightedMedians, colWeightedSds, colWeightedVars, rowAlls, rowAnyNAs, rowAnys, rowAvgsPerColSet, rowCollapse,
+##     rowCounts, rowCummaxs, rowCummins, rowCumprods, rowCumsums, rowDiffs, rowIQRDiffs, rowIQRs, rowLogSumExps, rowMadDiffs, rowMads,
+##     rowMaxs, rowMeans2, rowMedians, rowMins, rowOrderStats, rowProds, rowQuantiles, rowRanges, rowRanks, rowSdDiffs, rowSds, rowSums2,
+##     rowTabulates, rowVarDiffs, rowVars, rowWeightedMads, rowWeightedMeans, rowWeightedMedians, rowWeightedSds, rowWeightedVars</code></pre>
+<pre><code>## Det følgende objekt er maskeret fra &#39;package:Biobase&#39;:
 ## 
 ##     rowMedians</code></pre>
 <pre class="r"><code>library(&quot;tidyverse&quot;)
@@ -404,7 +401,7 @@ library(&quot;here&quot;)</code></pre>
 <code>sample_data</code> which is the sample data.</p>
 <pre class="r"><code>sample_data &lt;- read_tsv(file = here(&quot;data/01_cleaned_sample_data.tsv&quot;))</code></pre>
 <pre><code>## Rows: 131 Columns: 8
-## ── Column specification ───────────────────────────────────────────────────────────────────────────────
+## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (8): title, diagnosis, id, sample, sf3b1, srsf2, genome, cells
 ## 
@@ -435,42 +432,33 @@ argument <code>design</code></p>
                                      colData = sample_data, 
                                      design = ~ sf3b1 + srsf2 + cells + diagnosis)</code></pre>
 <pre><code>## converting counts to integer mode</code></pre>
-<pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are
-## characters, converting to factors</code></pre>
+<pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are characters, converting to factors</code></pre>
 <p>We estimate the normalization factors</p>
 <pre class="r"><code>dds_object &lt;- estimateSizeFactors(dds_object)
 
 sizeFactors(dds_object)</code></pre>
-<pre><code>## GSM3167287 GSM3167290 GSM3167292 GSM3167294 GSM3167295 GSM3167297 GSM3167298 GSM3167300 GSM3167302 
-##  1.2483626  1.1585897  0.9677345  1.1644793  1.0794667  1.2536439  1.1197694  1.1289509  0.9619465 
-## GSM3167303 GSM3167305 GSM3167306 GSM3167308 GSM3167310 GSM3167311 GSM3167313 GSM3167314 GSM3167316 
-##  1.0789526  0.8978468  1.1907869  1.0858863  1.3783353  1.4415423  1.2412170  1.2094152  1.1563491 
-## GSM3167318 GSM3167319 GSM3167321 GSM3167322 GSM3167324 GSM3167325 GSM3167327 GSM3167329 GSM3167330 
-##  1.3622544  1.5705942  1.4257860  1.3343407  1.3599181  1.1263104  1.0987905  0.9494073  1.3458021 
-## GSM3167332 GSM3167334 GSM3167335 GSM3167337 GSM3167338 GSM3167340 GSM3167341 GSM3167342 GSM3167343 
-##  1.3958391  1.4382814  1.3690883  1.1885614  1.2887150  1.1911452  0.8374138  1.1159707  1.2483788 
-## GSM3167344 GSM3167345 GSM3167346 GSM3167347 GSM3167348 GSM3167349 GSM3167350 GSM3167351 GSM3167353 
-##  1.2241543  1.3024564  1.0532534  0.9770234  1.2201436  1.1434063  1.3854808  1.5682322  1.2656689 
-## GSM3167354 GSM3167355 GSM3167356 GSM3167357 GSM3167358 GSM3167359 GSM3167360 GSM3167361 GSM3167362 
-##  1.2368193  1.7041663  1.5235865  1.3553640  1.1425786  1.3607586  1.2275602  1.4817345  1.2911062 
-## GSM3167363 GSM3167364 GSM3167365 GSM3167367 GSM3167368 GSM3167369 GSM3167370 GSM3167371 GSM3167372 
-##  1.4118974  1.3262334  1.0313414  1.7593532  1.1773378  1.1753494  1.2368122  1.1038078  1.0800932 
-## GSM3167373 GSM3167374 GSM3167375 GSM3167376 GSM3167377 GSM3167378 GSM3167379 GSM3167380 GSM3167381 
-##  1.2965651  1.5363207  1.3283888  1.1997000  1.0218875  1.2546165  1.3492527  1.1045416  1.4386279 
-## GSM3167382 GSM3167383 GSM3167384 GSM3167385 GSM3167386 GSM3167387 GSM3167388 GSM3167389 GSM3167390 
-##  1.1168790  1.0906165  0.7793764  1.3854184  1.3077527  0.9503410  1.3095683  1.5347004  1.3219409 
-## GSM3167391 GSM3167392 GSM3167393 GSM3167394 GSM3167395 GSM3167396 GSM3167397 GSM3167398 GSM3167399 
-##  1.2066374  1.2065753  1.5590354  1.3419661  1.1178426  1.2267789  1.3077114  1.0709634  1.2680464 
-## GSM3190034 GSM3190035 GSM3190036 GSM3190037 GSM3190038 GSM3190039 GSM3190040 GSM3190041 GSM3190042 
-##  1.0600453  1.3016133  0.9944825  1.1324129  1.0161160  0.9852467  1.0233149  0.8278884  1.0042261 
-## GSM3190043 GSM3190044 GSM3190045 GSM3190046 GSM3190047 GSM3190048 GSM3190049 GSM3190050 GSM3190051 
-##  1.0282390  1.0030441  0.7652092  0.9813942  0.7994706  0.9270688  0.9540002  0.8024753  0.0795816 
-## GSM3190052 GSM3190053 GSM3190054 GSM3190055 GSM3190056 GSM3190057 GSM3190058 GSM3190059 GSM3190060 
-##  0.4914205  0.8730121  1.1346045  1.0039518  0.9974251  0.6037616  0.8523356  0.4397592  0.9691896 
-## GSM3190061 GSM3190062 GSM3190063 GSM3190064 GSM3190065 GSM3190066 GSM3190067 GSM3190068 GSM3190069 
-##  0.1956491  1.0797358  1.2486403  0.5858281  0.4982755  0.4355522  1.1384859  1.3468100  0.7348469 
-## GSM3190070 GSM3190071 GSM3190072 GSM3190073 GSM3190074 
-##  1.3052605  0.1682708  0.1377184  1.1510321  0.1479549</code></pre>
+<pre><code>## GSM3167287 GSM3167290 GSM3167292 GSM3167294 GSM3167295 GSM3167297 GSM3167298 GSM3167300 GSM3167302 GSM3167303 GSM3167305 GSM3167306 GSM3167308 
+##  1.2483626  1.1585897  0.9677345  1.1644793  1.0794667  1.2536439  1.1197694  1.1289509  0.9619465  1.0789526  0.8978468  1.1907869  1.0858863 
+## GSM3167310 GSM3167311 GSM3167313 GSM3167314 GSM3167316 GSM3167318 GSM3167319 GSM3167321 GSM3167322 GSM3167324 GSM3167325 GSM3167327 GSM3167329 
+##  1.3783353  1.4415423  1.2412170  1.2094152  1.1563491  1.3622544  1.5705942  1.4257860  1.3343407  1.3599181  1.1263104  1.0987905  0.9494073 
+## GSM3167330 GSM3167332 GSM3167334 GSM3167335 GSM3167337 GSM3167338 GSM3167340 GSM3167341 GSM3167342 GSM3167343 GSM3167344 GSM3167345 GSM3167346 
+##  1.3458021  1.3958391  1.4382814  1.3690883  1.1885614  1.2887150  1.1911452  0.8374138  1.1159707  1.2483788  1.2241543  1.3024564  1.0532534 
+## GSM3167347 GSM3167348 GSM3167349 GSM3167350 GSM3167351 GSM3167353 GSM3167354 GSM3167355 GSM3167356 GSM3167357 GSM3167358 GSM3167359 GSM3167360 
+##  0.9770234  1.2201436  1.1434063  1.3854808  1.5682322  1.2656689  1.2368193  1.7041663  1.5235865  1.3553640  1.1425786  1.3607586  1.2275602 
+## GSM3167361 GSM3167362 GSM3167363 GSM3167364 GSM3167365 GSM3167367 GSM3167368 GSM3167369 GSM3167370 GSM3167371 GSM3167372 GSM3167373 GSM3167374 
+##  1.4817345  1.2911062  1.4118974  1.3262334  1.0313414  1.7593532  1.1773378  1.1753494  1.2368122  1.1038078  1.0800932  1.2965651  1.5363207 
+## GSM3167375 GSM3167376 GSM3167377 GSM3167378 GSM3167379 GSM3167380 GSM3167381 GSM3167382 GSM3167383 GSM3167384 GSM3167385 GSM3167386 GSM3167387 
+##  1.3283888  1.1997000  1.0218875  1.2546165  1.3492527  1.1045416  1.4386279  1.1168790  1.0906165  0.7793764  1.3854184  1.3077527  0.9503410 
+## GSM3167388 GSM3167389 GSM3167390 GSM3167391 GSM3167392 GSM3167393 GSM3167394 GSM3167395 GSM3167396 GSM3167397 GSM3167398 GSM3167399 GSM3190034 
+##  1.3095683  1.5347004  1.3219409  1.2066374  1.2065753  1.5590354  1.3419661  1.1178426  1.2267789  1.3077114  1.0709634  1.2680464  1.0600453 
+## GSM3190035 GSM3190036 GSM3190037 GSM3190038 GSM3190039 GSM3190040 GSM3190041 GSM3190042 GSM3190043 GSM3190044 GSM3190045 GSM3190046 GSM3190047 
+##  1.3016133  0.9944825  1.1324129  1.0161160  0.9852467  1.0233149  0.8278884  1.0042261  1.0282390  1.0030441  0.7652092  0.9813942  0.7994706 
+## GSM3190048 GSM3190049 GSM3190050 GSM3190051 GSM3190052 GSM3190053 GSM3190054 GSM3190055 GSM3190056 GSM3190057 GSM3190058 GSM3190059 GSM3190060 
+##  0.9270688  0.9540002  0.8024753  0.0795816  0.4914205  0.8730121  1.1346045  1.0039518  0.9974251  0.6037616  0.8523356  0.4397592  0.9691896 
+## GSM3190061 GSM3190062 GSM3190063 GSM3190064 GSM3190065 GSM3190066 GSM3190067 GSM3190068 GSM3190069 GSM3190070 GSM3190071 GSM3190072 GSM3190073 
+##  0.1956491  1.0797358  1.2486403  0.5858281  0.4982755  0.4355522  1.1384859  1.3468100  0.7348469  1.3052605  0.1682708  0.1377184  1.1510321 
+## GSM3190074 
+##  0.1479549</code></pre>
 <p>And extract the normalized counts</p>
 <pre class="r"><code>normalized_counts &lt;- counts(object = dds_object, 
                             normalized = T)</code></pre>

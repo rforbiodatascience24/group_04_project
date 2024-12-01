@@ -48,7 +48,7 @@ Making table with descriptives and saving.
 basic_table <- table1( ~ Diagnosis | `Cell fraction`, 
                        data = sample_data)
 
-htmltools::save_html(html = basic_table, file = here("images/table01.html"))
+basic_table
 ```
 
 And a bar plot describing the distribution of samples across the different diagnoses and saving.
@@ -143,6 +143,8 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
 ### Patching it all together
 mutant_plots <- (srsf2_num_plot + sf3b1_num_plot) / (srsf2_frac_plot + sf3b1_frac_plot)
 
+mutant_plots
+
 
 ggsave(plot = mutant_plots, 
        file = here("images/plot_mutations_across_samples.png"), 
@@ -151,20 +153,7 @@ ggsave(plot = mutant_plots,
                    height = 7)
 ```
 
-### Histogram : Gene frequencies
-
-```{r}
-count_data <- readRDS(file = here("data/02_count_data_augments.Rdata"))
-count_data <- count_data |> 
-  mutate(across(everything(), as.numeric))
-
-normalized_counts <- readRDS(file = here("data/03_normalized_counts.Rdata"))
-normalized_counts <- normalized_counts |>
-  mutate(across(everything(), as.numeric))
-
-```
-
-======= We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
+We find that only a small fraction of samples carry the SRSF2 mutations, whereas a significant proportion of samples harbor the SF3B1 mutation.
 
 ## Clustering analysis
 
@@ -593,6 +582,8 @@ Patching the four PCA plots together
 
 ```{r}
 pca_combined <- (plot_pca_all_non_vst + plot_pca_hsc_non_vst) / (plot_pca_all_cells_vst + plot_pca_hsc_vst)
+
+pca_combined
 
 ggsave(plot = pca_combined, file = here("images/pca_plots_combined.png"), width = 20, height = 10)
 ```
