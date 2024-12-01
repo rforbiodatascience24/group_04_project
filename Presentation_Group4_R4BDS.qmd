@@ -1,6 +1,6 @@
 ---
-title: "Group04_Project_Presentation"
-author: "Tilman Nelissen"
+title: "Group 4 Project"
+author: "Tilman Nelissen, Thea Rosholm"
 date: 3 dec 2024
 editor: visual
 format: revealjs
