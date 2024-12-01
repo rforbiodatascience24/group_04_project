@@ -18,8 +18,6 @@ format: revealjs
 
 </div>
 
-## 
-
 ## Materials and methods: Data Retrieval and Cleaning
 
 -   Data identified on the Gene Expression Omnibus server: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE19429>
@@ -32,9 +30,6 @@ format: revealjs
 
 ![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg)
 
-## Transforming and Joining Data (maybe we don't need that as we kinda cover it in the previous slided)
-
-This is some text
 
 ## Sample compositions
 
@@ -50,7 +45,7 @@ Nithiya's histograms of count distribution.
 
 ![](images/pca_plots_combined.png)
 
-## Clustering analysis using K-means (k = 4) and UMAP (Thea´s creation)
+## Clustering analysis using K-means (k = 4)
 
 ![](images/plot_kmeans4_all_cells.png)
 
