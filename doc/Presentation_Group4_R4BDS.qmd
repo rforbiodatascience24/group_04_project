@@ -59,11 +59,11 @@ editor: visual
 :::
 :::
 
-## Clustering using PCA on all cells and on HSC
+## Dimensionality reduction using PCA on all cells and on HSC
 
 ![](images/pca_plots_combined.png){fig-align="center"}
 
-## Clustering analysis using K-means (k = 4)
+## Clustering analysis using K-means (k = 4) and UMAP
 
 ![](images/plot_kmeans4_all_cells.png){fig-align="center"}
 

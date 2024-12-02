@@ -235,7 +235,14 @@ plot_pca_all_non_vst <- ggplot(data = augmented,
                        labels = c("Erythroid", "Granulocytic", "Hematopoietic", "Monocytic")
   ) +
   scale_color_brewer(palette = "Set1") + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5))  +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20),
+        plot.title=element_text(size=25, face = "bold"), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20, face = "bold"))
 
 plot_pca_all_non_vst
 ```
@@ -340,14 +347,22 @@ plot_pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined,
                             mapping = aes(x = PC1, 
                                           y = PC2, 
                                           shape = cells, 
-                                          color = diagnosis.x)) + 
+                                          color = diagnosis.x)
+                            ) + 
   geom_point(size = 6, alpha = 0.7)+ 
   scale_color_brewer(palette = "Set1") + 
   labs(title = "All samples\nVST transformation",
        color = "Diagnosis", 
        shape = "Cells") +
-  theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5)) 
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20),
+        plot.title=element_text(size=25, face = "bold"), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20, face = "bold")
+        )
 
 plot_pca_all_cells_vst
 ```
@@ -532,7 +547,13 @@ plot_pca_hsc_non_vst <- ggplot(data = augmented,
        fill = "Diagnosis") + 
   theme_minimal() +
   scale_fill_brewer(palette = "Set1") + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20),
+        plot.title=element_text(size=25, face = "bold"), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20, face = "bold"))
 
 plot_pca_hsc_non_vst
 ```
@@ -575,7 +596,13 @@ plot_pca_hsc_vst <- ggplot(data = pca_data_for_plot,
   scale_fill_brewer(palette = "Set1") + 
   labs(title = "HSC samples\nVST transformation", 
        fill = "Diagnosis") + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(text=element_text(size=20), 
+        axis.text=element_text(size=20), 
+        axis.title=element_text(size=20),
+        plot.title=element_text(size=25, face = "bold"), 
+        legend.text=element_text(size=20), 
+        legend.title=element_text(size=20, face = "bold"))
 
 plot_pca_hsc_vst
 ```
