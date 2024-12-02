@@ -19,7 +19,7 @@ editor: visual
 
 -   The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.
 -   The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.
--   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms.
+-   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms. 
 
 ![From: https://www.sigmaaldrich.com/](images/clipboard-1241564374.png)
 
