@@ -45,11 +45,11 @@ editor: visual
 
 \(A\) Overall cellular composition of the MDS patient samples as well as healthy donors
 
-![(A)](../images/plot_cell_fraction_plot.png){fig-align="left" width="40%"}
+![(A)](../images/plot_cell_fraction_plot.png){fig-align="left" width="28%"}
 
 \(B\) The following plots depicts the total number as well as the fraction of MDS and HD samples that contain the srsf2 and sf3b1 mutations within the various cellular compartments.
 
-![(B)](../images/plot_mutations_across_samples.png){fig-align="left" width="75%"}
+![(B)](../images/plot_mutations_across_samples.png){fig-align="left" width="52%"}
 
 
 ## Distribution of counts
