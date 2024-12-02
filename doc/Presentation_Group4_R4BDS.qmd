@@ -43,9 +43,9 @@ editor: visual
 
 ## Sample compositions
 
-![](images/plot_cell_fraction_plot.png){fig-align="center" width="40%"}
+![](images/04_plot_cell_fraction_plot.png){fig-align="center" width="40%"}
 
-![](images/plot_mutations_across_samples.png){fig-align="center" width="75%"}
+![](images/04_plot_mutations_across_samples.png){fig-align="center" width="75%"}
 
 ## Distribution of counts
 

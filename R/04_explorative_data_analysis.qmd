@@ -72,7 +72,7 @@ cell_fraction_plot <- ggplot(data = sample_data,
 cell_fraction_plot
 
 ggsave(plot = cell_fraction_plot, 
-       filename = here("images/plot_cell_fraction_plot.png"), 
+       filename = here("images/04_plot_cell_fraction_plot.png"), 
                    device = "png", 
                    width = 15, 
                    height = 7)
@@ -87,7 +87,8 @@ mds_data <- sample_data |>
 ###
 srsf2_num_plot <- ggplot(data = mds_data, 
                          mapping = aes(x = `Cell fraction`,
-                                       fill = srsf2)) + 
+                                       fill = srsf2,
+                                       alpha = 0.5)) + 
   geom_bar(color = "black") + 
   theme_minimal() +
   labs(title = "SRSF2 mutations in MDS samples", 
@@ -95,14 +96,14 @@ srsf2_num_plot <- ggplot(data = mds_data,
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
                                    hjust = 0.95), 
-        legend.position = "none") + 
+        legend.position = "right", alpha = 0.5) + 
   scale_fill_brewer(palette = "Set1") 
 
 
 sf3b1_num_plot <- ggplot(data = mds_data, 
                          mapping = aes(x = `Cell fraction`,
-                                       fill = sf3b1), 
-                         legend.position = "none") + 
+                                       fill = sf3b1,
+                                       alpha = 0.5)) + 
   geom_bar(color = "black") + 
   theme_minimal() +
   labs(title = "SF3B1 mutations in  MDS samples", 
@@ -110,7 +111,7 @@ sf3b1_num_plot <- ggplot(data = mds_data,
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
                                    hjust = 0.95), 
-        legend.position = "right") + 
+        legend.position = "none") + 
   scale_fill_brewer(palette = "Set1")
 
 
@@ -118,7 +119,8 @@ sf3b1_num_plot <- ggplot(data = mds_data,
 ### Could show the same with fractions
 srsf2_frac_plot <- ggplot(data = mds_data, 
                           mapping = aes(x = `Cell fraction`,
-                                        fill = srsf2)) + 
+                                        fill = srsf2,
+                                        alpha = 0.5)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
   theme_minimal() +
@@ -131,7 +133,8 @@ srsf2_frac_plot <- ggplot(data = mds_data,
 
 sf3b1_frac_plot <- ggplot(data = mds_data, 
                           mapping = aes(x = `Cell fraction`,
-                                        fill = sf3b1)) + 
+                                        fill = sf3b1,
+                                        alpha = 0.5)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
   theme_minimal() +
@@ -149,7 +152,7 @@ mutant_plots
 
 
 ggsave(plot = mutant_plots, 
-       file = here("images/plot_mutations_across_samples.png"), 
+       file = here("images/04_plot_mutations_across_samples.png"), 
                    device = "png", 
                    width = 15, 
                    height = 7)
