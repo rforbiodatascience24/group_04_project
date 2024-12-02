@@ -1,9 +1,16 @@
 ---
-title: "Group04_Project_Presentation"
-author: "Tilman Nelissen"
+title: "Group 4 Project Presentation: Gene Expression in Bone Marrow Cells"
+author: |
+  Tilman Nelissen (s233043)  
+  Thea Rehm Rosholm (s225019)  
+  Edir Sebastian Vidal Castro (s243564)  
+  Nithiyashri Jayashankar (s244356)  
+  Morten Orebo Holmström (s242223)
 date: 3 dec 2024
+format: 
+  revealjs:
+    embed-resources: true
 editor: visual
-format: revealjs
 ---
 
 ## Introduction {data-background="IMG_0825.JPG"}
