@@ -176,7 +176,7 @@ For a correct PCA, we need to scale the data, which should only be done on the g
 
 ```{r}
 gene_data <- wide_count_data |> 
-  select(!c(sample:cells))
+  dplyr::select(!c(sample:cells))
 ```
 
 Some genes have a very low count, and it is problematic to apply a z-score if most counts are equal between the samples, so we remove genes, where the total count is below 10. Making vector `keep` with observation with counts \> 10
@@ -320,7 +320,7 @@ df_pca_all_cells <- data.frame(pca_all_cells[[1]])
 
 df_pca_all_cells <- df_pca_all_cells |> 
   mutate(sample = name) |> 
-  select(-name)
+  dplyr::select(-name)
 ```
 
 We join with the sample data on name = sample to get the cell fraction and diagnosis
@@ -373,7 +373,7 @@ delete_cols <- sample_data |>
   filter(!cells == "HSC") 
 
 delete_cols <- delete_cols |> 
-  select(sample)
+  dplyr::select(sample)
 
 delete_samples <- delete_cols$sample
 
@@ -612,7 +612,7 @@ Selecting for `genes_of_interest` in the `gene_data_scaled` object.
 gene_data_scaled <- as.data.frame(gene_data_scaled)
 
 gene_data_scaled_selected_genes <- gene_data_scaled |> 
-  select(all_of(genes_of_interest))
+  dplyr::select(all_of(genes_of_interest))
 ```
 
 Making the model with 4 clusters
