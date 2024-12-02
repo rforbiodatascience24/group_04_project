@@ -49,25 +49,23 @@ The data then is merged into a single dataframe called `sample_data`
 
 ```{r}
 #Function in order to extract from column table and merging everything into one dataframe
-extract_column_to_df <- function(data, patterns, names){
-  sample_list <- list()
+extract_column_to_df <- function(data, patterns, names) {
+  # Map over patterns and names to extract and rename the columns
+  extracted_data <- map2_dfc(patterns, names, ~ {
+    data %>%
+      dplyr::filter(str_detect(`^DATABASE = GeoMiame`, .x)) %>%
+      dplyr::select(value = `^DATABASE = GeoMiame`) %>%
+      dplyr::rename(!!.y := value)
+  })
   
-  for (i in seq_along(patterns)){
-    col <- data |>
-      filter(str_detect(string = `^DATABASE = GeoMiame`,
-                        pattern = patterns[i]) == TRUE) |>
-      rename(!!names[i] := `^DATABASE = GeoMiame`)
-    
-    sample_list[[names[i]]] <- col[[names[i]]]
-  }
-  sample_df <- as.data.frame(sample_list)
+  return(extracted_data)
 }
 
 patterns <- c("Sample_title =", "Sample_source_name_ch1", "disease status", "patient id", "SAMPLE", "sf3b1", "srsf2", "Genome_build")
 
 names <- c("title", "source", "diagnosis", "id", "sample", "sf3b1", "srsf2", "genome")
 
-sample_data <- meta_data |> extract_column_to_df(patterns, names)
+sample_data <- extract_column_to_df(meta_data, patterns, names)
 ```
 
 Removing unnecessary strings in each observation with the `str_remove` function.

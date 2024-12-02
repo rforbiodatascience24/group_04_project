@@ -1,9 +1,16 @@
 ---
-title: "Group04_Project_Presentation"
-author: "Tilman Nelissen"
+title: "Group 4 Project Presentation: Gene Expression in Bone Marrow Cells"
+author: |
+  Tilman Nelissen (s233043)  
+  Thea Rehm Rosholm (s225019)  
+  Edir Sebastian Vidal Castro (s243564)  
+  Nithiyashri Jayashankar (s244356)  
+  Morten Orebo Holmström (s242223)
 date: 3 dec 2024
+format: 
+  revealjs:
+    embed-resources: true
 editor: visual
-format: revealjs
 ---
 
 ## Introduction {data-background="IMG_0825.JPG"}
@@ -12,7 +19,7 @@ format: revealjs
 
 -   The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.
 -   The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.
--   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms.
+-   Gene expression analysis of specific cell fractions derived from the bone marrow could reveal potential targets of therapy and immune evasive mechanisms. 
 
 ![From: https://www.sigmaaldrich.com/](images/clipboard-1241564374.png)
 
