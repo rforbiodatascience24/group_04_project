@@ -1,6 +1,5 @@
 ---
 title: "0_all"
-author: "Tilman Nelissen"
 format: html
 editor: visual
 ---
@@ -23,7 +22,10 @@ library("here")
 files <- c("R/01_load_and_tidy.qmd",
            "R/02_augment_of_count_data.qmd",
            "R/03_augment_and_join_of_data_frames.qmd",
-           "R/04_explorative_data_analysis.qmd")
+           "R/04_explorative_data_analysis.qmd",
+           "R/05_explorative_analysis_and_DGE_analysis_on_normalized_counts_using_glm.qmd",
+           "R/06_DGE_within_all_tissues.qmd",
+           "R/07_Data_analysis_historgram_and_freq.qmd")
 
 # Render all files
 lapply(files, function(file) {
