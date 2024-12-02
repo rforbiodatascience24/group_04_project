@@ -226,9 +226,8 @@ volcano_plot <- full_df |>
                                 "Neutral" = "black")) +
   theme_minimal() + 
   theme(legend.position = "none") +
-  labs(title = "DGE on different tissue between patients
-       with MDS and healthy donors",
-       caption = "Adjusted p-value threshold of 0.0001\n
+  labs(title = "Differential gene expression on different cell types between patients with MDS and healthy donors",
+       caption = "Adjusted p-value threshold of 0.0001
        Colored genes with absolute log2FC greater than 5") +
   facet_wrap(~tissue)
 ```
@@ -280,7 +279,7 @@ scatter_plot <- full_df |>
   facet_wrap(~tissue, ncol = 4) +
   theme_prism() +
   theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
-  labs(title = "Significant DGE on different tissues")
+  labs(title = "Significant DGEs on different cell types")
 ```
 
 ```{r}
