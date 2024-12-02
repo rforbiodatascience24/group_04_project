@@ -7,6 +7,10 @@ editor: visual
 ### Load of data and packages
 
 ```{r}
+rm(list=ls()) #remove all variables in the environment
+packages <- c("DESeq2" ,"tidyverse", "here", "ggprism", "patchwork", "ggrepel", "broom")
+install.packages(base::setdiff(packages, rownames(installed.packages())))
+
 library("DESeq2")
 library("tidyverse")
 library("here")
@@ -187,14 +191,14 @@ pca_plot_hsc <- ggplot(data = augmented,
        x = "PC1", 
        y = "PC2", 
        color = "Diagnosis") + 
-  theme_prism() +
+  theme_minimal() +
   scale_fill_brewer(palette = "Set1")
 pca_plot_hsc
 ```
 
 As we have no evidence of clustering it is not worthwhile to make a scree plot.
 
-# Differential gene expression analysis using data from the DESeq2 analysis. 
+# Differential gene expression analysis using data from the DESeq2 analysis.
 
 We run the DESeq function on our deseq_object_hsc_only and then get the estimations using the `results` function.
 
@@ -236,7 +240,7 @@ ggplot(data = hsc_df,
                    aes(label = gene), 
                    max.overlaps = 20000, 
                    nudge_x = 2) + 
-  theme_prism() + 
+  theme_minimal() + 
   labs(title = "Differential gene expression in CD34+ HSC\n between patients with MDS and healthy donors", 
        caption = "Red line indicates an adjusted p-value of 0.000001\n
        labelled genes with a significance value below 0.000001")
@@ -269,7 +273,7 @@ ggplot(data = hsc_df,
   geom_label_repel(data = df_tma, aes(label = gene), 
                    max.overlaps = 10000, 
                    nudge_x = 2) + 
-  theme_prism() + 
+  theme_minimal() + 
   labs(title = "MDS patients vs. healthy donors:\nTumor microenvironment antigens highlighted", 
        caption = "Red line indicates an adjusted p-value of 0.000001")
 ```
@@ -287,12 +291,12 @@ ggplot(data = df_tma,
                    max.overlaps = 100) + 
   geom_hline(yintercept = -log10(0.05),
              color = "red") + 
-  theme_prism() +
+  theme_minimal() +
   labs(title = "Expression of tumor microenvironment antigens\n in CD34+ HSC from MDS patients and healthy donors", 
        caption = "Red line indicates an adjusted p-value of 0.05")
 ```
 
-# Using the normalized counts to establish a generalized linear model of gene counts 
+# Using the normalized counts to establish a generalized linear model of gene counts
 
 Using a generalized linear model we can model the expression of each `gene` as a dependent on the `diagnosis`. For that we need to apply a model for each gene and thereby we need to make nested dataframe and then map the `lm` function over that one.
 
@@ -379,7 +383,7 @@ ggplot(data = sign_genes,
   geom_errorbarh(data = sign_genes, 
                  aes(xmin = conf.low, 
                  xmax = conf.high)) + 
-  theme_bw() + 
+  theme_minimal() + 
   labs(y = "Gene name", 
        x = "Estimate (95 % CI)", 
        title = "Estimated expression levels of significantly differentially expressed genes by CD34+ HSC from MDS patients vs. healthy donors") +
@@ -401,5 +405,5 @@ ggplot(data = data_model,
          y = "-log10(p.value)", 
          x = "Estimate", 
          caption = "Horizontal line at p = 0.0000001") + 
-  theme_prism()
+  theme_minimal()
 ```

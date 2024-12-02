@@ -378,9 +378,9 @@ library(&quot;conflicted&quot;)</code></pre>
 <p>Load of count data</p>
 <pre class="r"><code>count_data &lt;- read_tsv(file = here(&quot;data/01_cleaned_count_data.tsv&quot;))</code></pre>
 <pre><code>## Rows: 39376 Columns: 132
-## ── Column specification ───────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
-## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM31672...
+## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM3167298, GSM3167300, GSM31673...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
@@ -396,84 +396,6 @@ for example the <code>select</code> function.</p>
 <pre class="r"><code>conflict_prefer(&quot;setdiff&quot;, &quot;base&quot;)</code></pre>
 <pre><code>## [conflicted] Will prefer base::setdiff over any other package.</code></pre>
 <pre class="r"><code>library(&quot;org.Hs.eg.db&quot;)</code></pre>
-<pre><code>## Loading required package: AnnotationDbi
-## Loading required package: stats4
-## Loading required package: BiocGenerics
-## 
-## Attaching package: &#39;BiocGenerics&#39;
-## 
-## The following objects are masked from &#39;package:lubridate&#39;:
-## 
-##     intersect, setdiff, union
-## 
-## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     combine, intersect, setdiff, union
-## 
-## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     IQR, mad, sd, var, xtabs
-## 
-## The following objects are masked from &#39;package:base&#39;:
-## 
-##     anyDuplicated, aperm, append, as.data.frame, basename, cbind, colnames, dirname,
-##     do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl, intersect,
-##     is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply, setdiff, sort, table,
-##     tapply, union, unique, unsplit, which.max, which.min
-## 
-## Loading required package: Biobase
-## Welcome to Bioconductor
-## 
-##     Vignettes contain introductory material; view with &#39;browseVignettes()&#39;. To cite
-##     Bioconductor, see &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.
-## 
-## Loading required package: IRanges
-## Loading required package: S4Vectors
-## 
-## Attaching package: &#39;S4Vectors&#39;
-## 
-## The following objects are masked from &#39;package:lubridate&#39;:
-## 
-##     second, second&lt;-
-## 
-## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     first, rename
-## 
-## The following object is masked from &#39;package:tidyr&#39;:
-## 
-##     expand
-## 
-## The following object is masked from &#39;package:utils&#39;:
-## 
-##     findMatches
-## 
-## The following objects are masked from &#39;package:base&#39;:
-## 
-##     expand.grid, I, unname
-## 
-## 
-## Attaching package: &#39;IRanges&#39;
-## 
-## The following object is masked from &#39;package:lubridate&#39;:
-## 
-##     %within%
-## 
-## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     collapse, desc, slice
-## 
-## The following object is masked from &#39;package:purrr&#39;:
-## 
-##     reduce
-## 
-## 
-## Attaching package: &#39;AnnotationDbi&#39;
-## 
-## The following object is masked from &#39;package:dplyr&#39;:
-## 
-##     select</code></pre>
 <p>Prefer to use <code>dplyr</code> functions instead of
 <code>AnnotationDbi</code> in <code>org.Hs.eg.db</code>.</p>
 <pre class="r"><code>conflict_prefer_all(winner = &quot;dplyr&quot;, 
