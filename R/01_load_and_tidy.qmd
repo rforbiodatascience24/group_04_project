@@ -89,7 +89,7 @@ sample_data <- sample_data |>
                            source == "Bone marrow monocytic precursor" ~ "monocytic"),
          diagnosis = case_when(diagnosis == "Myelodysplastic Syndrome" ~ "MDS", 
                                TRUE ~ "HD")) |> 
-  select(-source)
+  dplyr::select(-source)
 ```
 
 Saving as tsv-files
