@@ -199,7 +199,7 @@ volcano_plot <- full_df |>
   scale_color_manual(values = c("Over" = "blue",
                                 "Under" = "red",
                                 "Neutral" = "black")) +
-  theme_prism() + 
+  theme_minimal() + 
   theme(legend.position = "none") +
   labs(title = "DGE on different tissue between patients
        with MDS and healthy donors",
@@ -256,6 +256,16 @@ scatter_plot <- full_df |>
 ```
 
 ```{r}
-#ggsave("plot_DGE_volcano.png", plot = volcano_plot)
-#ggsave("plot_DGE_scatter.png", plot = scatter_plot)
+ggsave(plot = volcano_plot, 
+       filename =here("images/plot_DGE_volcano.png"),
+       device = "png",
+       width = 10, 
+       height = 6)
+
+ggsave(plot = scatter_plot, 
+       filename =here("images/plot_DGE_scatter.png"),
+       device = "png",
+       width = 9, 
+       height = 5)
+
 ```
