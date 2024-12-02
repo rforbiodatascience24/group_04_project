@@ -87,31 +87,30 @@ mds_data <- sample_data |>
 ###
 srsf2_num_plot <- ggplot(data = mds_data, 
                          mapping = aes(x = `Cell fraction`,
-                                       fill = srsf2,
-                                       alpha = 0.5)) + 
-  geom_bar(color = "black") + 
+                                       fill = srsf2)) + 
+  geom_bar(color = "black",
+           alpha = 0.5) + 
   theme_minimal() +
   labs(title = "SRSF2 mutations in MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
                                    hjust = 0.95), 
-        legend.position = "right", alpha = 0.5) + 
+        legend.position = "none") + 
   scale_fill_brewer(palette = "Set1") 
 
 
 sf3b1_num_plot <- ggplot(data = mds_data, 
                          mapping = aes(x = `Cell fraction`,
-                                       fill = sf3b1,
-                                       alpha = 0.5)) + 
-  geom_bar(color = "black") + 
+                                       fill = sf3b1)) + 
+  geom_bar(color = "black", alpha = 0.5) + 
   theme_minimal() +
   labs(title = "SF3B1 mutations in  MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
                                    hjust = 0.95), 
-        legend.position = "none") + 
+        legend.position = "right") + 
   scale_fill_brewer(palette = "Set1")
 
 
@@ -122,7 +121,8 @@ srsf2_frac_plot <- ggplot(data = mds_data,
                                         fill = srsf2,
                                         alpha = 0.5)) + 
   geom_bar(position = position_fill(), 
-           color = "black") + 
+           color = "black",
+           alpha = 0.5) + 
   theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
@@ -136,7 +136,8 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
                                         fill = sf3b1,
                                         alpha = 0.5)) + 
   geom_bar(position = position_fill(), 
-           color = "black") + 
+           color = "black",
+           alpha = 0.5) + 
   theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
