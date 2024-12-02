@@ -7,6 +7,10 @@ editor: visual
 ### Load of data and packages
 
 ```{r}
+rm(list=ls()) #remove all variables in the environment
+packages <- c("DESeq2" ,"tidyverse", "here", "ggprism", "patchwork", "ggrepel", "broom")
+install.packages(base::setdiff(packages, rownames(installed.packages())))
+
 library("DESeq2")
 library("tidyverse")
 library("here")
