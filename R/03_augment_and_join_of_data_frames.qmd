@@ -40,6 +40,8 @@ And then check if the rownames of sample_data is equal to column names in count_
 
 ```{r}
 all(rownames(sample_data) == colnames(count_data))
+
+write_tsv(x = count_data, file = here("data/03_non-normalized_counts.tsv"))
 ```
 
 To establish the DESeq2 object we use the `DESeqDataSetFromMatrix` function and create the object `dds_object`. We stratify according to `diagnosis`, `sf3b1`, `srsf2` and `cells` where `diagnosis` is put in the end of the argument `design`

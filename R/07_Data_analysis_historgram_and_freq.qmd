@@ -18,18 +18,28 @@ library("RColorBrewer")
 library("ggridges")
 ```
 
+# Loading Data
+
+```{r}
+
+normalized_counts <- read_rds(file = here("data/03_normalized_counts.Rdata"))
+non_normalized_counts <- read_tsv(file = here("data/03_non-normalized_counts.tsv"))
+full_data <- read_tsv(file = here("data/03_full_data.tsv"))
+
+```
+
 # Data wrangling
 
 The sum of all the gene counts across all samples for each gene is obtained here. This is done for both normalized and non-normalized gene counts.
 
-The sums is then obtained and using cbind it is attached together..
+The sums is then obtained and using c bind it is attached together.
 
 ```{r}
 normalized <- normalized_counts |>
   select(where(is.numeric))
 normalized_sums <- rowSums(normalized)
   
-non_normalized<- count_data |> 
+non_normalized<- non_normalized_counts |> 
   select(where(is.numeric))
 non_normalized_sums <-rowSums(non_normalized)
 
@@ -44,7 +54,7 @@ joined = cbind(non_normalized_sums, normalized_sums)
 
 ## Histograms of normalized and non-normalized gene counts
 
-i NEED HELP HERE TO PUT THE 2 PLOTS NEXT TO EACH OTHER SINCE PATCHWORKS IS NOT WORKING FOR SOME REASON FOR ME :(
+The sums of the normalized and non-normalized were plotted as histograms.
 
 ```{r}
 P1 <- ggplot(joined, aes(x=normalized_sums))+
@@ -81,27 +91,34 @@ P2 <- ggplot(joined, aes(x=non_normalized_sums))+
 P2
 ```
 
-The effect of normalisation is not very apparent from these graphs.
+The effect of normalization is not very apparent from these graphs.
 
-### Rownames to column in count_data.
+### Adding gene names to non-normalized dataframe.
 
-The gene names exist as rownames, hence for ease of plotting, it is now converted into a "gene" column containing all the names.
+The gene names had to be extracted form the normalized dataframe to add to the non-normalized data fram
 
 ```{r}
-library(tibble)
-count_data_new <- tibble::rownames_to_column(count_data, "gene")
-normalized_counts <- normalized_counts |> select(gene, everything())
+
+non_normalized_counts_new <- non_normalized_counts |>
+  mutate(gene = normalized_counts$gene)
+
+non_normalized_counts_new <- non_normalized_counts_new |> 
+  select(gene, everything())
+
+
+normalized_counts <- normalized_counts |> 
+  select(gene, everything())
 
 ```
 
-## Geom Density graphs:
+## 
 
-## Data wrangling
+## Data wrangling for Geom Density plots:
 
 Non-normalised count data was pivotted longer - this helps with merging with the full data so we get an entire data frame consisting of normalised and non-normalized gene counts side by side.
 
 ```{r}
-non_norm_count_data_long <- count_data_new |>
+non_norm_count_data_long <- non_normalized_counts_new |>
   pivot_longer(
   cols = -1,
   names_to = "sample",
@@ -120,9 +137,7 @@ merged_data <- full_data |>
 
 ## Density graphs
 
-Also here, patchworks is not working for me :/
-
-Here on, I have factored diagnosis to make sure that each diagnosis is considered as a factor level to compare between MDS and HD
+Here, it is ensure that the variable diagnosis is considered a factor which helps compare between MDS and HD patients.
 
 ## Density graphs pl1 and pl2
 
@@ -168,34 +183,51 @@ pl2 <- ggplot(merged_data, aes(x = non_norm_counts, fill = diagnosis, color = di
 pl2
 ```
 
+From the above graphs, the effect of normalization is not very apparent.
+
 ## Histogram - Representing gene expression, factored on diagnosis
 
-These graphs actually report that the overall gene expression is higher in the MDS patients than in the Healthy donors. This was also compared between the normalized and non-normalized counts.
+These graphs report that the overall gene expression is higher in the MDS patients than in the Healthy donors. This was also compared between the normalized and non-normalized counts.
 
 ```{r}
-ggplot(merged_data, aes(x = counts, fill = diagnosis)) +
-  geom_histogram(alpha = 0.5, position = "identity", bins = 50) +
+histrogram_plot_normalized <- ggplot(merged_data, aes(x = counts, 
+                        fill = diagnosis)) +
+  geom_histogram(alpha = 0.5, 
+                 position = "identity",
+                 bins = 50) +
   scale_x_log10() +
   labs(title = "Histogram of normalised Gene Counts by Diagnosis",
        x = "Gene Counts",
        y = "Frequency") +
   theme_minimal()
+histrogram_plot_normalized
+
+ggsave(plot = histrogram_plot_normalized, 
+       filename = here("images/plot_histogram_plot_normalized.png"))
 ```
 
 ```{r}
-ggplot(merged_data, aes(x = non_norm_counts, fill = diagnosis)) +
-  geom_histogram(alpha = 0.5, position = "identity", bins = 50) +
+histogram_plot_non_norm <- ggplot(merged_data, aes(x = non_norm_counts, 
+                        fill = diagnosis)) +
+  geom_histogram(alpha = 0.5, 
+                 position = "identity", 
+                 bins = 50) +
   scale_x_log10() +
   labs(title = "Histogram of non-normalized Gene Counts by Diagnosis",
        x = "Gene Counts",
        y = "Frequency") +
   theme_minimal()
 
+histogram_plot_non_norm
+
+ggsave(plot = histogram_plot_non_norm,
+       filename = here("images/plot_histogram_plot_non_normalized.png"))
+
 ```
 
 ## Extra plot (not for inclusion)
 
-These two plots below are a bit redundant and gives the same output just in a different way. I don't think we need to use these ones:
+These two plots below are a bit redundant and gives the same output just in a different way. Hence they are not to be included:
 
 ## ECDF Plot
 
