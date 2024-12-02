@@ -10,6 +10,7 @@ rm(list=ls()) #remove all variables in the environment
 packages <- c("tidyverse", "here", "broom", "table1", "ggprism", "patchwork", "RColorBrewer", "DESeq2")
 install.packages(base::setdiff(packages, rownames(installed.packages())))
 
+library("umap")
 library("here")
 library("tidyverse")
 library("broom")
@@ -370,6 +371,62 @@ plot_pca_all_cells_vst <- ggplot(data = df_pca_all_cells_joined,
 
 plot_pca_all_cells_vst
 ```
+
+### Umap
+
+We transpose the date:
+
+```{r}
+
+normalized_counts_trans <- assay(dds_object) |>
+  t()
+```
+
+Conduct umap:
+
+```{r}
+umap_results <- umap(normalized_counts_trans)
+  
+```
+
+We gather all the data needed dor the umap into one dataframe
+
+```{r}
+
+umap_plot_df <- data.frame(umap_results$layout) |>
+  rownames_to_column("sample") |>
+  inner_join(sample_data, by = "sample")
+```
+
+Finally we plot:
+
+```{r}
+umap <- ggplot(
+  umap_plot_df,
+  aes(
+    x = X1,
+    y = X2,
+    color = diagnosis,
+    shape = cells
+  )
+) +
+  geom_point() +
+  scale_color_brewer(palette = "Set1") + 
+  theme_minimal() +
+  labs(title = "Umap")
+       
+
+
+ggsave(plot = umap, 
+       file = here("images/plot_umap.png"), 
+                   device = "png", 
+                   width = 5, 
+                   height = 5)
+
+umap
+```
+
+
 
 ### PCA of HSC only
 
