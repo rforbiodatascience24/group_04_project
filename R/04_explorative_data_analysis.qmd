@@ -61,7 +61,6 @@ cell_fraction_plot <- ggplot(data = sample_data,
   geom_bar(color = "black",
            position = "stack", 
            width = 0.6) +
-  theme_prism() +
   labs(title = "Cell Fractions within MDS and Healthy donor samples",
        y = "Number of Samples",
        x = "Diagnosis",
@@ -73,7 +72,10 @@ cell_fraction_plot <- ggplot(data = sample_data,
 cell_fraction_plot
 
 ggsave(plot = cell_fraction_plot, 
-       filename = here("images/plot_cell_fraction_plot.png"))
+       filename = here("images/plot_cell_fraction_plot.png"), 
+                   device = "png", 
+                   width = 15, 
+                   height = 7)
 ```
 
 Making plots to explore the mutational spectrum of the samples. As only MDS samples have the mutations, we filter for patients with MDS.
@@ -87,12 +89,12 @@ srsf2_num_plot <- ggplot(data = mds_data,
                          mapping = aes(x = `Cell fraction`,
                                        fill = srsf2)) + 
   geom_bar(color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(title = "SRSF2 mutations in MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1") 
 
@@ -102,12 +104,12 @@ sf3b1_num_plot <- ggplot(data = mds_data,
                                        fill = sf3b1), 
                          legend.position = "none") + 
   geom_bar(color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(title = "SF3B1 mutations in  MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "right") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -119,10 +121,10 @@ srsf2_frac_plot <- ggplot(data = mds_data,
                                         fill = srsf2)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -132,10 +134,10 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
                                         fill = sf3b1)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -176,7 +178,7 @@ For a correct PCA, we need to scale the data, which should only be done on the g
 
 ```{r}
 gene_data <- wide_count_data |> 
-  select(!c(sample:cells))
+  dplyr::select(!c(sample:cells))
 ```
 
 Some genes have a very low count, and it is problematic to apply a z-score if most counts are equal between the samples, so we remove genes, where the total count is below 10. Making vector `keep` with observation with counts \> 10
@@ -252,12 +254,12 @@ eigen <- pca_object |>
   broom::tidy("eigenvalues")
 
 scree_all_cell_fractions <- eigen |> 
-  filter(PC <10) |> 
+  dplyr::filter(PC <10) |> 
   ggplot(mapping = aes(x = PC, 
                        y = percent)) + 
   geom_col(fill = "cornflowerblue", 
            color = "black") +  
-  theme_prism() +
+  theme_minimal() +
   labs(title = "Variance explained by each principal component", 
        y = "Fraction of variance explained", 
        x = "Principal component") +
@@ -327,7 +329,7 @@ df_pca_all_cells <- data.frame(pca_all_cells[[1]])
 
 df_pca_all_cells <- df_pca_all_cells |> 
   mutate(sample = name) |> 
-  select(-name)
+  dplyr::select(-name)
 ```
 
 We join with the sample data on name = sample to get the cell fraction and diagnosis
@@ -385,10 +387,10 @@ We get the sample ID (the one containing GSM....) from the samples that do not c
 
 ```{r}
 delete_cols <- sample_data |> 
-  filter(!cells == "HSC") 
+  dplyr::filter(!cells == "HSC") 
 
 delete_cols <- delete_cols |> 
-  select(sample)
+  dplyr::select(sample)
 
 delete_samples <- delete_cols$sample
 
@@ -405,7 +407,7 @@ We filter for samples that have HSC in the `cells`
 
 ```{r}
 sample_data <- sample_data |> 
-  filter(cells == "HSC") 
+  dplyr::filter(cells == "HSC") 
 ```
 
 And convert `count_data` to numeric.
@@ -639,7 +641,7 @@ Selecting for `genes_of_interest` in the `gene_data_scaled` object.
 gene_data_scaled <- as.data.frame(gene_data_scaled)
 
 gene_data_scaled_selected_genes <- gene_data_scaled |> 
-  select(all_of(genes_of_interest))
+  dplyr::select(all_of(genes_of_interest))
 ```
 
 Making the model with 4 clusters
