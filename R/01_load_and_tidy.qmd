@@ -54,8 +54,8 @@ extract_column_to_df <- function(data, patterns, names) {
   extracted_data <- map2_dfc(patterns, names, ~ {
     data %>%
       dplyr::filter(str_detect(`^DATABASE = GeoMiame`, .x)) %>%
-      dplyr::select(value = `^DATABASE = GeoMiame`) %>%
-      dplyr::rename(!!.y := value)
+      dplyr::select(col_name = `^DATABASE = GeoMiame`) %>%
+      dplyr::rename(!!.y := col_name)
   })
   
   return(extracted_data)

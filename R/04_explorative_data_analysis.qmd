@@ -80,7 +80,7 @@ Making plots to explore the mutational spectrum of the samples. As only MDS samp
 
 ```{r}
 mds_data <- sample_data |> 
-  filter(Diagnosis == "MDS")
+  dplyr::filter(Diagnosis == "MDS")
 
 ###
 srsf2_num_plot <- ggplot(data = mds_data, 
