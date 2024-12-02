@@ -11,7 +11,7 @@
 
 
 
-<title>Augmenting of data using the DESeq2 package</title>
+<title>Differential gene expression analysis on all tissues</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,30 +348,23 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Augmenting of data using the DESeq2
-package</h1>
+<h1 class="title toc-ignore">Differential gene expression analysis on
+all tissues</h1>
 
 </div>
 
 
-<div id="normalization-of-count-data-through-the-deseq2-package" class="section level2">
-<h2>Normalization of count data through the DESeq2 package</h2>
-<p>The RNA counts in our dataframe are not ready for analysis yet, as we
-have to normalize the counts to account for the difference in sequencing
-libraries across the different samples. To do this we will make a DESeq2
-object and we will then extract the normalized counts which will allow
-us to continue the work with this.</p>
-<p>We load the <code>DESeq2</code> package and other packages:</p>
-<pre class="r"><code>rm(list=ls()) #remove all variables in the environment
-packages &lt;- c(&quot;tidyverse&quot;, &quot;here&quot;, &quot;DESeq2&quot;)
-install.packages(base::setdiff(packages, rownames(installed.packages())))
-
-library(&quot;DESeq2&quot;)
+<div id="load-of-data-and-packages" class="section level3">
+<h3>Load of data and packages</h3>
+<pre class="r"><code>library(&quot;DESeq2&quot;)
 library(&quot;tidyverse&quot;)
-library(&quot;here&quot;)</code></pre>
-<p>And load data <code>count_data</code> which is the count matrix and
-<code>sample_data</code> which is the sample data.</p>
-<pre class="r"><code>sample_data &lt;- read_tsv(file = here(&quot;data/01_cleaned_sample_data.tsv&quot;))</code></pre>
+library(&quot;here&quot;)
+library(&quot;ggprism&quot;)
+library(&quot;patchwork&quot;)
+library(&quot;ggrepel&quot;)
+library(&quot;broom&quot;)
+
+sample_data &lt;- read_tsv(file = here(&quot;data/01_cleaned_sample_data.tsv&quot;))</code></pre>
 <pre><code>## Rows: 131 Columns: 8
 ## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
@@ -380,87 +373,285 @@ library(&quot;here&quot;)</code></pre>
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre class="r"><code>count_data &lt;- read_rds(file = here(&quot;data/02_count_data_augments.Rdata&quot;))</code></pre>
-<p>First we need to convert each observation of the variable
-<code>sample</code> to the variable <code>id</code> that will be used
-for rownames.</p>
-<pre class="r"><code>sample_data &lt;- sample_data |&gt;
-  mutate(id = sample) |&gt; 
-  column_to_rownames(var = &quot;id&quot;)</code></pre>
-<p>And then check if the rownames of sample_data is equal to column
-names in count_data.</p>
-<pre class="r"><code>all(rownames(sample_data) == colnames(count_data))</code></pre>
-<pre><code>## [1] TRUE</code></pre>
-<pre class="r"><code>write_tsv(x = count_data, file = here(&quot;data/03_non-normalized_counts.tsv&quot;))</code></pre>
-<p>To establish the DESeq2 object we use the
-<code>DESeqDataSetFromMatrix</code> function and create the object
-<code>dds_object</code>. We stratify according to
-<code>diagnosis</code>, <code>sf3b1</code>, <code>srsf2</code> and
-<code>cells</code> where <code>diagnosis</code> is put in the end of the
-argument <code>design</code></p>
-<p>Making the count_data variables numeric.</p>
-<pre class="r"><code>count_data &lt;- count_data |&gt; 
-  mutate(across(everything(), as.numeric))</code></pre>
-<p>Making the DESeq2-object.</p>
-<pre class="r"><code>dds_object &lt;- DESeqDataSetFromMatrix(countData = count_data, 
-                                     colData = sample_data, 
-                                     design = ~ sf3b1 + srsf2 + cells + diagnosis)</code></pre>
+<p>The aim of this analysis is to perform DGE analysis on samples
+including the rest of the tissues. We have found relevant genes
+expressed differential on HSC tissue from last analysis. Now we want to
+include every tissue in order to check significant difference in DGE
+among these.</p>
+</div>
+<div id="differential-gene-expression-analysis-including-other-tissues" class="section level1">
+<h1>Differential Gene Expression Analysis including other tissues</h1>
+<pre class="r"><code>#Selecting tissues
+delete_cols_hsc &lt;- sample_data |&gt; 
+  filter(!cells == &quot;HSC&quot;) |&gt;
+  dplyr::select(sample) |&gt;
+  pull()
+
+delete_cols_gr &lt;- sample_data |&gt; 
+  filter(!cells == &quot;granulocytic&quot;) |&gt;
+  dplyr::select(sample) |&gt;
+  pull()
+
+delete_cols_mo &lt;- sample_data |&gt; 
+  filter(!cells == &quot;monocytic&quot;) |&gt;
+  dplyr::select(sample) |&gt;
+  pull()
+
+delete_cols_er &lt;- sample_data |&gt; 
+  filter(!cells == &quot;erythroid&quot;) |&gt;
+  dplyr::select(sample) |&gt;
+  pull()
+
+#Selecting count data from tissue
+count_data_hsc &lt;- count_data |&gt; 
+  dplyr::select(-all_of(delete_cols_hsc)) |&gt;
+  mutate(across(everything(), as.numeric))
+
+count_data_gr &lt;- count_data |&gt; 
+  dplyr::select(-all_of(delete_cols_gr)) |&gt;
+  mutate(across(everything(), as.numeric))
+
+count_data_mo &lt;- count_data |&gt; 
+  dplyr::select(-all_of(delete_cols_mo)) |&gt;
+  mutate(across(everything(), as.numeric))
+
+count_data_er &lt;- count_data |&gt; 
+  dplyr::select(-all_of(delete_cols_er)) |&gt;
+  mutate(across(everything(), as.numeric))
+
+#Column to rownames for data
+sample_data_hsc &lt;- sample_data |&gt; 
+  filter(cells == &quot;HSC&quot;) |&gt; 
+  column_to_rownames(var = &quot;sample&quot;)
+
+#all(rownames(sample_data_hsc) == colnames(count_data_hsc)) # TRUE
+
+sample_data_gr &lt;- sample_data |&gt; 
+  filter(cells == &quot;granulocytic&quot;) |&gt; 
+  column_to_rownames(var = &quot;sample&quot;)
+
+#all(rownames(sample_data_gr) == colnames(count_data_gr)) # TRUE
+
+sample_data_mo &lt;- sample_data |&gt; 
+  filter(cells == &quot;monocytic&quot;) |&gt; 
+  column_to_rownames(var = &quot;sample&quot;)
+
+#all(rownames(sample_data_mo) == colnames(count_data_mo)) # TRUE
+
+sample_data_er &lt;- sample_data |&gt; 
+  filter(cells == &quot;erythroid&quot;) |&gt; 
+  column_to_rownames(var = &quot;sample&quot;)
+
+#all(rownames(sample_data_er) == colnames(count_data_er)) # TRUE
+
+#Creating DESeq Dataset - using only diagnosis for other tissues apart from HSC in the design because sf3b1 and srsf2 are perfectly correlated for these
+dds_object_hsc_only &lt;- DESeqDataSetFromMatrix(countData = count_data_hsc, 
+                                              colData = sample_data_hsc, 
+                                              design = ~ srsf2 + sf3b1 + diagnosis)</code></pre>
 <pre><code>## converting counts to integer mode</code></pre>
 <pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are characters, converting to
 ## factors</code></pre>
-<p>We estimate the normalization factors</p>
-<pre class="r"><code>dds_object &lt;- estimateSizeFactors(dds_object)
+<pre class="r"><code>dds_object_gr_only &lt;- DESeqDataSetFromMatrix(countData = count_data_gr, 
+                                              colData = sample_data_gr, 
+                                              design = ~ diagnosis)</code></pre>
+<pre><code>## converting counts to integer mode</code></pre>
+<pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are characters, converting to
+## factors</code></pre>
+<pre class="r"><code>dds_object_mo_only &lt;- DESeqDataSetFromMatrix(countData = count_data_mo, 
+                                              colData = sample_data_mo, 
+                                              design = ~ diagnosis)</code></pre>
+<pre><code>## converting counts to integer mode</code></pre>
+<pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are characters, converting to
+## factors</code></pre>
+<pre class="r"><code>dds_object_er_only &lt;- DESeqDataSetFromMatrix(countData = count_data_er, 
+                                              colData = sample_data_er, 
+                                              design = ~ diagnosis)</code></pre>
+<pre><code>## converting counts to integer mode</code></pre>
+<pre><code>## Warning in DESeqDataSet(se, design = design, ignoreRank): some variables in design formula are characters, converting to
+## factors</code></pre>
+<pre class="r"><code>#Estimating the size factors
+dds_object_hsc_only &lt;- estimateSizeFactors(object = dds_object_hsc_only)
+dds_object_gr_only &lt;- estimateSizeFactors(object = dds_object_gr_only)
+dds_object_mo_only &lt;- estimateSizeFactors(object = dds_object_mo_only)
+dds_object_er_only &lt;- estimateSizeFactors(object = dds_object_er_only)
 
-sizeFactors(dds_object)</code></pre>
-<pre><code>## GSM3167287 GSM3167290 GSM3167292 GSM3167294 GSM3167295 GSM3167297 GSM3167298 GSM3167300 GSM3167302 GSM3167303 GSM3167305 
-##  1.2483626  1.1585897  0.9677345  1.1644793  1.0794667  1.2536439  1.1197694  1.1289509  0.9619465  1.0789526  0.8978468 
-## GSM3167306 GSM3167308 GSM3167310 GSM3167311 GSM3167313 GSM3167314 GSM3167316 GSM3167318 GSM3167319 GSM3167321 GSM3167322 
-##  1.1907869  1.0858863  1.3783353  1.4415423  1.2412170  1.2094152  1.1563491  1.3622544  1.5705942  1.4257860  1.3343407 
-## GSM3167324 GSM3167325 GSM3167327 GSM3167329 GSM3167330 GSM3167332 GSM3167334 GSM3167335 GSM3167337 GSM3167338 GSM3167340 
-##  1.3599181  1.1263104  1.0987905  0.9494073  1.3458021  1.3958391  1.4382814  1.3690883  1.1885614  1.2887150  1.1911452 
-## GSM3167341 GSM3167342 GSM3167343 GSM3167344 GSM3167345 GSM3167346 GSM3167347 GSM3167348 GSM3167349 GSM3167350 GSM3167351 
-##  0.8374138  1.1159707  1.2483788  1.2241543  1.3024564  1.0532534  0.9770234  1.2201436  1.1434063  1.3854808  1.5682322 
-## GSM3167353 GSM3167354 GSM3167355 GSM3167356 GSM3167357 GSM3167358 GSM3167359 GSM3167360 GSM3167361 GSM3167362 GSM3167363 
-##  1.2656689  1.2368193  1.7041663  1.5235865  1.3553640  1.1425786  1.3607586  1.2275602  1.4817345  1.2911062  1.4118974 
-## GSM3167364 GSM3167365 GSM3167367 GSM3167368 GSM3167369 GSM3167370 GSM3167371 GSM3167372 GSM3167373 GSM3167374 GSM3167375 
-##  1.3262334  1.0313414  1.7593532  1.1773378  1.1753494  1.2368122  1.1038078  1.0800932  1.2965651  1.5363207  1.3283888 
-## GSM3167376 GSM3167377 GSM3167378 GSM3167379 GSM3167380 GSM3167381 GSM3167382 GSM3167383 GSM3167384 GSM3167385 GSM3167386 
-##  1.1997000  1.0218875  1.2546165  1.3492527  1.1045416  1.4386279  1.1168790  1.0906165  0.7793764  1.3854184  1.3077527 
-## GSM3167387 GSM3167388 GSM3167389 GSM3167390 GSM3167391 GSM3167392 GSM3167393 GSM3167394 GSM3167395 GSM3167396 GSM3167397 
-##  0.9503410  1.3095683  1.5347004  1.3219409  1.2066374  1.2065753  1.5590354  1.3419661  1.1178426  1.2267789  1.3077114 
-## GSM3167398 GSM3167399 GSM3190034 GSM3190035 GSM3190036 GSM3190037 GSM3190038 GSM3190039 GSM3190040 GSM3190041 GSM3190042 
-##  1.0709634  1.2680464  1.0600453  1.3016133  0.9944825  1.1324129  1.0161160  0.9852467  1.0233149  0.8278884  1.0042261 
-## GSM3190043 GSM3190044 GSM3190045 GSM3190046 GSM3190047 GSM3190048 GSM3190049 GSM3190050 GSM3190051 GSM3190052 GSM3190053 
-##  1.0282390  1.0030441  0.7652092  0.9813942  0.7994706  0.9270688  0.9540002  0.8024753  0.0795816  0.4914205  0.8730121 
-## GSM3190054 GSM3190055 GSM3190056 GSM3190057 GSM3190058 GSM3190059 GSM3190060 GSM3190061 GSM3190062 GSM3190063 GSM3190064 
-##  1.1346045  1.0039518  0.9974251  0.6037616  0.8523356  0.4397592  0.9691896  0.1956491  1.0797358  1.2486403  0.5858281 
-## GSM3190065 GSM3190066 GSM3190067 GSM3190068 GSM3190069 GSM3190070 GSM3190071 GSM3190072 GSM3190073 GSM3190074 
-##  0.4982755  0.4355522  1.1384859  1.3468100  0.7348469  1.3052605  0.1682708  0.1377184  1.1510321  0.1479549</code></pre>
-<p>And extract the normalized counts</p>
-<pre class="r"><code>normalized_counts &lt;- counts(object = dds_object, 
-                            normalized = T)</code></pre>
-<p>The genes are in the rownames, and we want these to be a separate
-column. First we convert from matrix to dataframe.</p>
-<pre class="r"><code>normalized_counts &lt;- data.frame(normalized_counts)</code></pre>
-<p>Extract the rownames that will be used for the new variable
-<code>gene</code>.</p>
-<pre class="r"><code>gene_names &lt;- base::rownames(normalized_counts)</code></pre>
-<p>Which is made a new variable gene</p>
-<pre class="r"><code>normalized_counts &lt;- normalized_counts |&gt; 
-  mutate(gene = gene_names)</code></pre>
-<p>For consistency the rownames are removed</p>
-<pre class="r"><code>base::rownames(normalized_counts) &lt;- NULL
+#DESeq analysis and CLR transformation
+dds_object_hsc_only &lt;- DESeq(dds_object_hsc_only)</code></pre>
+<pre><code>## using pre-existing size factors</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## gene-wise dispersion estimates</code></pre>
+<pre><code>## mean-dispersion relationship</code></pre>
+<pre><code>## final dispersion estimates</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre><code>## -- replacing outliers and refitting for 1787 genes
+## -- DESeq argument &#39;minReplicatesForReplace&#39; = 7 
+## -- original counts are preserved in counts(dds)</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre class="r"><code>dds_object_gr_only &lt;- DESeq(dds_object_gr_only)</code></pre>
+<pre><code>## using pre-existing size factors</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## gene-wise dispersion estimates</code></pre>
+<pre><code>## mean-dispersion relationship</code></pre>
+<pre><code>## final dispersion estimates</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre><code>## -- replacing outliers and refitting for 1824 genes
+## -- DESeq argument &#39;minReplicatesForReplace&#39; = 7 
+## -- original counts are preserved in counts(dds)</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre class="r"><code>dds_object_mo_only &lt;- DESeq(dds_object_mo_only)</code></pre>
+<pre><code>## using pre-existing size factors</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## gene-wise dispersion estimates</code></pre>
+<pre><code>## mean-dispersion relationship</code></pre>
+<pre><code>## final dispersion estimates</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre><code>## -- replacing outliers and refitting for 2818 genes
+## -- DESeq argument &#39;minReplicatesForReplace&#39; = 7 
+## -- original counts are preserved in counts(dds)</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre class="r"><code>dds_object_er_only &lt;- DESeq(dds_object_er_only)</code></pre>
+<pre><code>## using pre-existing size factors</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## gene-wise dispersion estimates</code></pre>
+<pre><code>## mean-dispersion relationship</code></pre>
+<pre><code>## final dispersion estimates</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre><code>## -- replacing outliers and refitting for 4382 genes
+## -- DESeq argument &#39;minReplicatesForReplace&#39; = 7 
+## -- original counts are preserved in counts(dds)</code></pre>
+<pre><code>## estimating dispersions</code></pre>
+<pre><code>## fitting model and testing</code></pre>
+<pre class="r"><code>#Extracting results
+results_hsc_only &lt;- results(object = dds_object_hsc_only, 
+                                         alpha = 0.05)
 
-write_rds(x = normalized_counts, file = here(&quot;data/03_normalized_counts.Rdata&quot;))</code></pre>
-<pre class="r"><code>counts_long &lt;- normalized_counts |&gt; 
-  pivot_longer(cols = contains(&quot;GSM&quot;), 
-               names_to = &quot;sample&quot;, 
-               values_to = &quot;counts&quot;) |&gt; 
-  mutate(counts = round(x = counts, digits = 0))</code></pre>
-<p>And we join on sample</p>
-<pre class="r"><code>full_data &lt;- counts_long |&gt; 
-  full_join(sample_data, by = &quot;sample&quot;)</code></pre>
-<p>Data saved</p>
-<pre class="r"><code>write_tsv(x = full_data, file = here(&quot;data/03_full_data.tsv&quot;))</code></pre>
+results_gr_only &lt;- results(object = dds_object_gr_only, 
+                                         alpha = 0.05)
+
+results_mo_only &lt;- results(object = dds_object_mo_only, 
+                                         alpha = 0.05)
+
+results_er_only &lt;- results(object = dds_object_er_only, 
+                                         alpha = 0.05)
+
+#Back to DataFrame
+hsc_df &lt;- data.frame(results_hsc_only)
+hsc_df &lt;- hsc_df |&gt;
+  mutate(gene = rownames(hsc_df)) |&gt;
+  mutate(tissue = &quot;HSC&quot;)
+
+gr_df &lt;- data.frame(results_gr_only)
+gr_df &lt;- gr_df |&gt;  
+  mutate(gene = rownames(gr_df)) |&gt;
+  mutate(tissue = &quot;Granulocytic&quot;)
+
+mo_df &lt;- data.frame(results_mo_only)
+mo_df &lt;- mo_df |&gt;  
+  mutate(gene = rownames(mo_df)) |&gt;
+  mutate(tissue = &quot;Monocytic&quot;)
+
+er_df &lt;- data.frame(results_er_only)
+er_df &lt;- er_df |&gt;  
+  mutate(gene = rownames(er_df)) |&gt;
+  mutate(tissue = &quot;Erythroid&quot;)
+
+full_df &lt;- rbind(hsc_df, gr_df, mo_df, er_df) |&gt;
+  mutate(tissue = factor(tissue, levels = c(&quot;HSC&quot;, &quot;Granulocytic&quot;, &quot;Monocytic&quot;, &quot;Erythroid&quot;)))</code></pre>
+<pre class="r"><code>full_df &lt;- full_df |&gt; 
+  mutate(dge = case_when(padj &lt; 0.0001 &amp; log2FoldChange &gt; 5 ~ &quot;Over&quot;,
+                         padj &lt; 0.0001 &amp; log2FoldChange &lt; -5 ~ &quot;Under&quot;,
+                         TRUE ~ &quot;Neutral&quot;))
+
+
+volcano_plot &lt;- full_df |&gt;
+  ggplot(mapping = aes(x = log2FoldChange, 
+                       y = -log10(padj),
+                       color = dge
+                       )) + 
+  geom_hline(yintercept = -log10(0.0001), 
+             color = &quot;black&quot;) + 
+  geom_vline(xintercept = 5, 
+             color = &quot;black&quot;) + 
+  geom_vline(xintercept = -5, 
+             color = &quot;black&quot;) +
+  geom_point(alpha = 0.5) +
+  
+  #Overexpression
+  geom_label_repel(data = full_df |&gt;
+                    filter(dge == &quot;Over&quot;),
+                  aes(label = gene),
+                  #nudge_x = 0.2,
+                  #nudge_y = 0.2,
+                  colour = &quot;blue&quot;,
+                  size = 3) +
+  #Subexpression
+  geom_label_repel(data = full_df |&gt;
+                    filter(dge == &quot;Under&quot;),
+                  aes(label = gene),
+                  #nudge_x = 0.2,
+                  #nudge_y = 0.2,
+                  colour = &quot;red&quot;,
+                  size = 3) +
+  
+  scale_color_manual(values = c(&quot;Over&quot; = &quot;blue&quot;,
+                                &quot;Under&quot; = &quot;red&quot;,
+                                &quot;Neutral&quot; = &quot;black&quot;)) +
+  theme_prism() + 
+  theme(legend.position = &quot;none&quot;) +
+  labs(title = &quot;DGE on different tissue between patients
+       with MDS and healthy donors&quot;,
+       caption = &quot;Adjusted p-value threshold of 0.0001\n
+       Colored genes with absolute log2FC greater than 5&quot;) +
+  facet_wrap(~tissue)</code></pre>
+<pre class="r"><code>scatter_plot &lt;- full_df |&gt;
+  filter(!dge == &quot;Neutral&quot;) |&gt;
+  ggplot(aes(y = log2FoldChange,
+             x = 1,
+             color = dge)) +
+  geom_point(alpha = 0.6) +
+  scale_color_manual(values = c(&quot;Over&quot; = &quot;blue&quot;,
+                                &quot;Under&quot; = &quot;red&quot;)) +
+  geom_hline(yintercept = 0,
+             linetype = &quot;dashed&quot;) +
+  
+  geom_text(aes(x = 1.5, y = 0, label = &quot;Overexpressed&quot;), vjust = -1, color = &quot;blue&quot;, size = 2.5) +
+  
+  geom_text(aes(x = 1.5, y = 0, label = &quot;Underexpressed&quot;), vjust = 1.8, color = &quot;red&quot;, size = 2.5) +
+  
+  geom_text_repel(data = full_df |&gt;
+                    filter(dge == &quot;Over&quot; &amp; log2FoldChange &gt; 15),
+                  aes(label = gene),
+                  #nudge_x = 1,
+                  #nudge_y = 1,
+                  colour = &quot;blue&quot;,
+                  size = 2.4,
+                  max.overlaps = 50) +
+  
+  geom_text_repel(data = full_df |&gt;
+                    filter(dge == &quot;Over&quot; &amp; log2FoldChange &lt;= 15),
+                  aes(label = gene),
+                  #nudge_x = 1,
+                  #nudge_y = 1,
+                  colour = &quot;blue&quot;,
+                  size = 2.4,
+                  max.overlaps = 10) +
+  
+  geom_text_repel(data = full_df |&gt;
+                    filter(dge == &quot;Under&quot;),
+                  aes(label = gene),
+                  #nudge_x = 1,
+                  colour = &quot;red&quot;,
+                  size = 2.4,
+                  max.overlaps = 10) +
+  xlim(0, 2) +
+  facet_wrap(~tissue, ncol = 4) +
+  theme(legend.position = &quot;none&quot;, axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  labs(title = &quot;Significant DGE on different tissues&quot;)</code></pre>
+<pre class="r"><code>#ggsave(&quot;plot_DGE_volcano.png&quot;, plot = volcano_plot)
+#ggsave(&quot;plot_DGE_scatter.png&quot;, plot = scatter_plot)</code></pre>
 </div>
 
 

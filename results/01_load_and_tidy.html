@@ -372,26 +372,8 @@ RNA in the sample.</p>
 packages &lt;- c(&quot;tidyverse&quot;, &quot;here&quot;)
 install.packages(base::setdiff(packages, rownames(installed.packages())))  
 
-library(&quot;tidyverse&quot;)</code></pre>
-<pre><code>## Warning: pakke &#39;tidyverse&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;ggplot2&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;tibble&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;tidyr&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;readr&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;dplyr&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;stringr&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## Warning: pakke &#39;lubridate&#39; blev bygget under R version 4.2.3</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
-## ✔ dplyr     1.1.4     ✔ readr     2.1.4
-## ✔ forcats   1.0.0     ✔ stringr   1.5.1
-## ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
-## ✔ purrr     1.0.1     
-## ── Conflicts ──────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
-## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
-<pre class="r"><code>library(&quot;here&quot;)</code></pre>
+library(&quot;tidyverse&quot;)
+library(&quot;here&quot;)</code></pre>
 <p>Creating the <code>data</code>, and <code>raw_data</code> directory,
 loading of sample meta data if it doesn’t exist already.</p>
 <pre class="r"><code>if(!dir.exists(here(&quot;data/raw_data&quot;))){
@@ -409,7 +391,7 @@ if(file.exists(data_path)){
           file = str_c(data_path))
 }</code></pre>
 <pre><code>## Rows: 7096 Columns: 1
-## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
 ## chr (1): ^DATABASE = GeoMiame
 ## 
@@ -424,25 +406,23 @@ column table. These are:</p>
 <p>The data then is merged into a single dataframe called
 <code>sample_data</code></p>
 <pre class="r"><code>#Function in order to extract from column table and merging everything into one dataframe
-extract_column_to_df &lt;- function(data, patterns, names){
-  sample_list &lt;- list()
+extract_column_to_df &lt;- function(data, patterns, names) {
+  # Map over patterns and names to extract and rename the columns
+  extracted_data &lt;- map2_dfc(patterns, names, ~ {
+    data %&gt;%
+      dplyr::filter(str_detect(`^DATABASE = GeoMiame`, .x)) %&gt;%
+      dplyr::select(col_name = `^DATABASE = GeoMiame`) %&gt;%
+      dplyr::rename(!!.y := col_name)
+  })
   
-  for (i in seq_along(patterns)){
-    col &lt;- data |&gt;
-      filter(str_detect(string = `^DATABASE = GeoMiame`,
-                        pattern = patterns[i]) == TRUE) |&gt;
-      rename(!!names[i] := `^DATABASE = GeoMiame`)
-    
-    sample_list[[names[i]]] &lt;- col[[names[i]]]
-  }
-  sample_df &lt;- as.data.frame(sample_list)
+  return(extracted_data)
 }
 
 patterns &lt;- c(&quot;Sample_title =&quot;, &quot;Sample_source_name_ch1&quot;, &quot;disease status&quot;, &quot;patient id&quot;, &quot;SAMPLE&quot;, &quot;sf3b1&quot;, &quot;srsf2&quot;, &quot;Genome_build&quot;)
 
 names &lt;- c(&quot;title&quot;, &quot;source&quot;, &quot;diagnosis&quot;, &quot;id&quot;, &quot;sample&quot;, &quot;sf3b1&quot;, &quot;srsf2&quot;, &quot;genome&quot;)
 
-sample_data &lt;- meta_data |&gt; extract_column_to_df(patterns, names)</code></pre>
+sample_data &lt;- extract_column_to_df(meta_data, patterns, names)</code></pre>
 <p>Removing unnecessary strings in each observation with the
 <code>str_remove</code> function.</p>
 <pre class="r"><code>sample_data &lt;- sample_data |&gt; 
@@ -463,7 +443,7 @@ renamed into <code>cells</code>variable with shorter names.
                            source == &quot;Bone marrow monocytic precursor&quot; ~ &quot;monocytic&quot;),
          diagnosis = case_when(diagnosis == &quot;Myelodysplastic Syndrome&quot; ~ &quot;MDS&quot;, 
                                TRUE ~ &quot;HD&quot;)) |&gt; 
-  select(-source)</code></pre>
+  dplyr::select(-source)</code></pre>
 <p>Saving as tsv-files</p>
 <pre class="r"><code>write_tsv(x = sample_data, file = here(&quot;data/01_cleaned_sample_data.tsv&quot;))</code></pre>
 <p>Clearing memory to contain the count files</p>
@@ -481,9 +461,9 @@ if(file.exists(data_path_count)){
           file = str_c(data_path_count))
 }</code></pre>
 <pre><code>## Rows: 39376 Columns: 132
-## ── Column specification ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+## ── Column specification ───────────────────────────────────────────────────────────────────────────────────────────────────────
 ## Delimiter: &quot;\t&quot;
-## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM3167298, GSM3167300, GSM3167302, GSM3167303, GSM3167...
+## dbl (132): GeneID, GSM3167287, GSM3167290, GSM3167292, GSM3167294, GSM3167295, GSM3167297, GSM3167298, GSM3167300, GSM31673...
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
