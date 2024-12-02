@@ -61,7 +61,6 @@ cell_fraction_plot <- ggplot(data = sample_data,
   geom_bar(color = "black",
            position = "stack", 
            width = 0.6) +
-  theme_prism() +
   labs(title = "Cell Fractions within MDS and Healthy donor samples",
        y = "Number of Samples",
        x = "Diagnosis",
@@ -90,12 +89,12 @@ srsf2_num_plot <- ggplot(data = mds_data,
                          mapping = aes(x = `Cell fraction`,
                                        fill = srsf2)) + 
   geom_bar(color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(title = "SRSF2 mutations in MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1") 
 
@@ -105,12 +104,12 @@ sf3b1_num_plot <- ggplot(data = mds_data,
                                        fill = sf3b1), 
                          legend.position = "none") + 
   geom_bar(color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(title = "SF3B1 mutations in  MDS samples", 
        y = "Number", 
        x = "") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "right") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -122,10 +121,10 @@ srsf2_frac_plot <- ggplot(data = mds_data,
                                         fill = srsf2)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -135,10 +134,10 @@ sf3b1_frac_plot <- ggplot(data = mds_data,
                                         fill = sf3b1)) + 
   geom_bar(position = position_fill(), 
            color = "black") + 
-  theme_prism() +
+  theme_minimal() +
   labs(y = "Fraction") + 
   theme(axis.text.x = element_text(angle = 45, 
-                                   hjust = 0.35), 
+                                   hjust = 0.95), 
         legend.position = "none") + 
   scale_fill_brewer(palette = "Set1")
 
@@ -253,7 +252,7 @@ scree_all_cell_fractions <- eigen |>
                        y = percent)) + 
   geom_col(fill = "cornflowerblue", 
            color = "black") +  
-  theme_prism() +
+  theme_minimal() +
   labs(title = "Variance explained by each principal component", 
        y = "Fraction of variance explained", 
        x = "Principal component") +
