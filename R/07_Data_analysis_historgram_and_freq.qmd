@@ -43,8 +43,6 @@ non_normalized<- non_normalized_counts |>
   select(where(is.numeric))
 non_normalized_sums <-rowSums(non_normalized)
 
-normalized_sums
-non_normalized_sums
   
 ```
 
