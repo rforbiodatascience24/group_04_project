@@ -73,7 +73,10 @@ cell_fraction_plot <- ggplot(data = sample_data,
 cell_fraction_plot
 
 ggsave(plot = cell_fraction_plot, 
-       filename = here("images/plot_cell_fraction_plot.png"))
+       filename = here("images/plot_cell_fraction_plot.png"), 
+                   device = "png", 
+                   width = 15, 
+                   height = 7)
 ```
 
 Making plots to explore the mutational spectrum of the samples. As only MDS samples have the mutations, we filter for patients with MDS.
@@ -245,7 +248,7 @@ eigen <- pca_object |>
   broom::tidy("eigenvalues")
 
 scree_all_cell_fractions <- eigen |> 
-  filter(PC <10) |> 
+  dplyr::filter(PC <10) |> 
   ggplot(mapping = aes(x = PC, 
                        y = percent)) + 
   geom_col(fill = "cornflowerblue", 
@@ -370,7 +373,7 @@ We get the sample ID (the one containing GSM....) from the samples that do not c
 
 ```{r}
 delete_cols <- sample_data |> 
-  filter(!cells == "HSC") 
+  dplyr::filter(!cells == "HSC") 
 
 delete_cols <- delete_cols |> 
   dplyr::select(sample)
@@ -390,7 +393,7 @@ We filter for samples that have HSC in the `cells`
 
 ```{r}
 sample_data <- sample_data |> 
-  filter(cells == "HSC") 
+  dplyr::filter(cells == "HSC") 
 ```
 
 And convert `count_data` to numeric.
