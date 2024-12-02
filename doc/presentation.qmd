@@ -85,7 +85,7 @@ The impact of normalization appears subtle. However, it is noticeable that the o
 
 ![](../images/pca_plots_combined.png){fig-align="center"}
 
-## Clustering analysis using K-means (k = 4) compared to umap:
+## Clustering analysis using K-means (k = 4) and umap:
 ::: {.columns}
 
 ::: {.column width="50%"}
