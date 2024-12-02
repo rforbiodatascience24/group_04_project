@@ -12,7 +12,7 @@ format:
     transition: slide
     background-transition: fade
     embed-resources: true
-    theme: default 
+    theme: simple 
     slide-number: c/t
     fontsize: 20px
     footer: "22160 - R for Bio Data Science"
@@ -63,9 +63,19 @@ editor: visual
 
 ![](images/pca_plots_combined.png){fig-align="center"}
 
-## Clustering analysis using K-means (k = 4)
+## Clustering analysis using K-means (k = 4) compared to umap:
+::: {.columns}
 
-![](images/plot_kmeans4_all_cells.png){fig-align="center"}
+::: {.column width="50%"}
+![](images/plot_kmeans4_all_cells.png)
+:::
+
+::: {.column width="50%"}
+![](images/plot_umap.png)
+:::
+
+::::
+
 
 ## Differential gene expression: All samples and HSC
 
