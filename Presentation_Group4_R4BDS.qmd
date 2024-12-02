@@ -19,12 +19,9 @@ format:
 editor: visual
 ---
 
-
-
 ## Introduction {data-background="IMG_0825.JPG"}
 
-
-:::: {.columns}
+::: columns
 ::: {.column width="50%"}
 -   The myelodysplastic syndromes (MDS) are a diverse set of cancers in the bone marrow.
 -   The bone marrow consists of several cell types - amongst these hematopoietic stem cells and progenitor cells.
@@ -32,51 +29,56 @@ editor: visual
 :::
 
 ::: {.column width="50%"}
-![From: https://www.sigmaaldrich.com/](images/HD-clipboard.png){fig-align=center width="100%"}
+![From: https://www.sigmaaldrich.com/](images/HD-clipboard.png){fig-align="center" width="100%"}
 :::
-::::
+:::
 
 ## Materials and methods: Data Retrieval and Cleaning
 
-
-![Flowchart of data aquisition and inital tidying](images/01_Data_loading.jpg){fig-align=center}
+![Flowchart of data aquisition and inital tidying](images/01_Data_loading.jpg){fig-align="center"}
 
 ## Methods: Gene Mapping, Cleanup and DESeq2 Analysis
 
-![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg){fig-align=center}
+![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg){fig-align="center"}
 
 ## Sample compositions
 
-![](images/plot_cell_fraction_plot.png){fig-align=center width="40%"}
+\(A\) Overall cellular composition of the MDS patient samples as well as healthy donors
 
-![](images/plot_mutations_across_samples.png){fig-align=center width="75%"}
+![(A)](images/plot_cell_fraction_plot.png){fig-align="left" width="40%"}
 
+\(B\) The following plots depicts the total number as well as the fraction of MDS and HD samples that contain the srsf2 and sf3b1 mutations within the various cellular compartments.
+
+![(B)](images/plot_mutations_across_samples.png){fig-align="left" width="75%"}
 
 ## Distribution of counts
 
-:::: {.columns}
+::: columns
 ::: {.column width="50%"}
-![Histogram normalized](images/plot_histogram_plot_normalized.png){fig-align=center width="120%"}
+![Histogram non-normalized](images/plot_histogram_plot_non_normalized.png){fig-align="center" width="120%"}
 :::
 
 ::: {.column width="50%"}
-![Histogram non-normalized](images/plot_histogram_plot_non_normalized.png){fig-align=center width="120%"}
+![Histogram normalized](images/plot_histogram_plot_normalized.png){fig-align="center" width="120%"}
 :::
-::::
 
+The histograms above illustrate gene counts from both MDS patients and healthy donors, displayed before and after normalization.
+
+The impact of normalization appears subtle. However, it is noticeable that the overall gene counts in MDS patients are comparatively higher than those in healthy donors.
+:::
 
 ## Clustering using PCA on all cells and on HSC
 
-![](images/pca_plots_combined.png){fig-align=center}
+![](images/pca_plots_combined.png){fig-align="center"}
 
 ## Clustering analysis using K-means (k = 4)
 
-![](images/plot_kmeans4_all_cells.png){fig-align=center}
+![](images/plot_kmeans4_all_cells.png){fig-align="center"}
 
 ## Differential gene expression: All samples and HSC
 
-![](images/plot_DGE_volcano.png){fig-align=center}
+![](images/plot_DGE_volcano.png){fig-align="center"}
 
 ## Differential gene expression across the different cell populations - MDS vs. HD
 
-![](images/plot_DGE_scatter.png){fig-align=center}
+![](images/plot_DGE_scatter.png){fig-align="center"}
