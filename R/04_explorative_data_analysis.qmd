@@ -273,6 +273,7 @@ scree_all_cell_fractions <- eigen |>
 scree_all_cell_fractions
 ```
 
+
 ## PCA using VST transformed data
 
 We need to read in the count data and the sample data for all and then run the DESeq algorithm

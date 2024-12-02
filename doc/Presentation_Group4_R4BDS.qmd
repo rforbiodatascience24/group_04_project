@@ -12,18 +12,14 @@ format:
     transition: slide
     background-transition: fade
     embed-resources: true
-    theme: default 
+    theme: simple 
     slide-number: c/t
-    fontsize: 24px
+    fontsize: 20px
     footer: "22160 - R for Bio Data Science"
 editor: visual
 ---
 
-```{r}
-library("here")
-```
-
-## Introduction {data-background= here("IMG_0825.JPG")}
+## Introduction {data-background="IMG_0825.JPG"}
 
 ::: columns
 ::: {.column width="50%"}
@@ -33,51 +29,62 @@ library("here")
 :::
 
 ::: {.column width="50%"}
-![From: https://www.sigmaaldrich.com/](here("images/HD-clipboard.png")){fig-align="center"}
+![From: https://www.sigmaaldrich.com/](images/HD-clipboard.png){fig-align="center" width="100%"}
 :::
 :::
 
 ## Materials and methods: Data Retrieval and Cleaning
 
-![Flowchart of data aquisition and inital tidying](here("images/01_Data_loading.jpg")){fig-align="center"}
+![Flowchart of data aquisition and inital tidying](images/01_Data_loading.jpg){fig-align="center"}
 
 ## Methods: Gene Mapping, Cleanup and DESeq2 Analysis
 
-![Flowchart of data augmentation](here("images/02_Data_augmentation_03_join_fused.jpg")){fig-align="center"}
+![Flowchart of data augmentation](images/02_Data_augmentation_03_join_fused.jpg){fig-align="center"}
 
 ## Sample compositions
 
-![](here("images/plot_cell_fraction_plot.png")){width="328" height="288"}
+![](images/plot_cell_fraction_plot.png){fig-align="center" width="40%"}
 
-![](here("images/plot_mutations_across_samples.png")){width="591"}
+![](images/plot_mutations_across_samples.png){fig-align="center" width="75%"}
 
 ## Distribution of counts
 
 ::: columns
 ::: {.column width="50%"}
-![Histogram normalized](here("images/plot_histogram_plot_normalized.png")){fig-align="center"}
+![Histogram normalized](images/plot_histogram_plot_normalized.png){fig-align="center" width="120%"}
 :::
 
 ::: {.column width="50%"}
-![Histogram non-normalized](here("images/plot_histogram_plot_non_normalized.png")){fig-align="center"}
+![Histogram non-normalized](images/plot_histogram_plot_non_normalized.png){fig-align="center" width="120%"}
 :::
 :::
 
-## Dimensionality reduction using PCA on all cells and on HSC
+## Clustering using PCA on all cells and on HSC
 
-![](here("images/pca_plots_combined.png")){fig-align="center"}
+![](images/pca_plots_combined.png){fig-align="center"}
 
-## Clustering analysis using K-means (k = 4) and UMAP
+## Clustering analysis using K-means (k = 4) compared to umap:
+::: {.columns}
 
-![](here("images/plot_kmeans4_all_cells.png")){fig-align="center"}
+::: {.column width="50%"}
+
+![](images/plot_kmeans4_all_cells.png)
+:::
+
+::: {.column width="50%"}
+![](images/plot_umap.png)
+:::
+
+::::
+
 
 ## Differential gene expression: All samples and HSC
 
-![](here("images/plot_DGE_volcano.png")){fig-align="center"}
+![](images/plot_DGE_volcano.png){fig-align="center"}
 
 ## Differential gene expression across the different cell populations - MDS vs. HD
 
-![](here("images/plot_DGE_scatter.png")){fig-align="center"}
+![](images/plot_DGE_scatter.png){fig-align="center"}
 
 ## Conclusion and perspectives
 
