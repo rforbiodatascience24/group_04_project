@@ -28,8 +28,9 @@ The aim of this analysis is to perform DGE analysis on samples including the res
 
 # Differential Gene Expression Analysis including other tissues
 
+First of all we start by selecting the cell types and constructing a DataFrame for each one. For that it is selected the other samples to be discarded later.
+
 ```{r}
-#Selecting tissues
 delete_cols_hsc <- sample_data |> 
   filter(!cells == "HSC") |>
   dplyr::select(sample) |>
@@ -49,50 +50,64 @@ delete_cols_er <- sample_data |>
   filter(!cells == "erythroid") |>
   dplyr::select(sample) |>
   pull()
+```
 
-#Selecting count data from tissue
+Now that we have obtained from sample data, the deletion in count data of every sample except the desired one per cell type can be done.
+
+```{r}
 count_data_hsc <- count_data |> 
   dplyr::select(-all_of(delete_cols_hsc)) |>
-  mutate(across(everything(), as.numeric))
+  mutate(across(everything(), as.integer))
 
 count_data_gr <- count_data |> 
   dplyr::select(-all_of(delete_cols_gr)) |>
-  mutate(across(everything(), as.numeric))
+  mutate(across(everything(), as.integer))
 
 count_data_mo <- count_data |> 
   dplyr::select(-all_of(delete_cols_mo)) |>
-  mutate(across(everything(), as.numeric))
+  mutate(across(everything(), as.integer))
 
 count_data_er <- count_data |> 
   dplyr::select(-all_of(delete_cols_er)) |>
-  mutate(across(everything(), as.numeric))
+  mutate(across(everything(), as.integer))
+```
 
-#Column to rownames for data
+We now have the count data for each desired cell type. In order to verify that it has the desired structure, every column name on it should be the same as on the sample data.
+
+```{r}
 sample_data_hsc <- sample_data |> 
   filter(cells == "HSC") |> 
-  column_to_rownames(var = "sample")
+  column_to_rownames(var = "sample") |>
+  mutate(across(everything(), as.factor))
 
-#all(rownames(sample_data_hsc) == colnames(count_data_hsc)) # TRUE
+all(rownames(sample_data_hsc) == colnames(count_data_hsc)) # TRUE
 
 sample_data_gr <- sample_data |> 
   filter(cells == "granulocytic") |> 
-  column_to_rownames(var = "sample")
+  column_to_rownames(var = "sample") |>
+  mutate(across(everything(), as.factor))
 
-#all(rownames(sample_data_gr) == colnames(count_data_gr)) # TRUE
+
+all(rownames(sample_data_gr) == colnames(count_data_gr)) # TRUE
 
 sample_data_mo <- sample_data |> 
   filter(cells == "monocytic") |> 
-  column_to_rownames(var = "sample")
+  column_to_rownames(var = "sample") |>
+  mutate(across(everything(), as.factor))
 
-#all(rownames(sample_data_mo) == colnames(count_data_mo)) # TRUE
+all(rownames(sample_data_mo) == colnames(count_data_mo)) # TRUE
 
 sample_data_er <- sample_data |> 
   filter(cells == "erythroid") |> 
-  column_to_rownames(var = "sample")
+  column_to_rownames(var = "sample") |>
+  mutate(across(everything(), as.factor))
 
-#all(rownames(sample_data_er) == colnames(count_data_er)) # TRUE
+all(rownames(sample_data_er) == colnames(count_data_er)) # TRUE
+```
 
-#Creating DESeq Dataset - using only diagnosis for other tissues apart from HSC in the design because sf3b1 and srsf2 are perfectly correlated for these
+The now DataFrames are transformed into DESeq Datasets. The design for cell types other than HSC is controlled only by the diagnosis, due to the fact that sf3b1 and srsf2 are perfectly correlated and can't be included as it is.
+
+```{r}
 dds_object_hsc_only <- DESeqDataSetFromMatrix(countData = count_data_hsc, 
                                               colData = sample_data_hsc, 
                                               design = ~ srsf2 + sf3b1 + diagnosis)
@@ -108,7 +123,11 @@ dds_object_mo_only <- DESeqDataSetFromMatrix(countData = count_data_mo,
 dds_object_er_only <- DESeqDataSetFromMatrix(countData = count_data_er, 
                                               colData = sample_data_er, 
                                               design = ~ diagnosis)
+```
 
+With this the rest of the analysis using DEseq can be done as follows. At the end we extract the results with a differential significance level of 0.05.
+
+```{r}
 #Estimating the size factors
 dds_object_hsc_only <- estimateSizeFactors(object = dds_object_hsc_only)
 dds_object_gr_only <- estimateSizeFactors(object = dds_object_gr_only)
@@ -133,7 +152,11 @@ results_mo_only <- results(object = dds_object_mo_only,
 
 results_er_only <- results(object = dds_object_er_only, 
                                          alpha = 0.05)
+```
 
+Reconstruct back to a DataFrame and joining everything back together.
+
+```{r}
 #Back to DataFrame
 hsc_df <- data.frame(results_hsc_only)
 hsc_df <- hsc_df |>
@@ -158,6 +181,8 @@ er_df <- er_df |>
 full_df <- rbind(hsc_df, gr_df, mo_df, er_df) |>
   mutate(tissue = factor(tissue, levels = c("HSC", "Granulocytic", "Monocytic", "Erythroid")))
 ```
+
+With the complete results DataFrame we can now generate the plots to identified DGEs between MDS and HDS patients for each cell type. We defined a p-value of 0.0001 to increase significance of the study, and a log2FC of at least 5.
 
 ```{r}
 full_df <- full_df |> 
@@ -208,6 +233,8 @@ volcano_plot <- full_df |>
   facet_wrap(~tissue)
 ```
 
+With these data we can focus on the DGEs on each cell type by doing a scatter plot of them.
+
 ```{r}
 scatter_plot <- full_df |>
   filter(!dge == "Neutral") |>
@@ -224,7 +251,7 @@ scatter_plot <- full_df |>
   
   geom_text(aes(x = 1.5, y = 0, label = "Underexpressed"), vjust = 1.8, color = "red", size = 2.5) +
   
-  geom_text_repel(data = full_df |>
+  geom_label_repel(data = full_df |>
                     filter(dge == "Over" & log2FoldChange > 15),
                   aes(label = gene),
                   #nudge_x = 1,
@@ -233,7 +260,7 @@ scatter_plot <- full_df |>
                   size = 2.4,
                   max.overlaps = 50) +
   
-  geom_text_repel(data = full_df |>
+  geom_label_repel(data = full_df |>
                     filter(dge == "Over" & log2FoldChange <= 15),
                   aes(label = gene),
                   #nudge_x = 1,
@@ -242,7 +269,7 @@ scatter_plot <- full_df |>
                   size = 2.4,
                   max.overlaps = 10) +
   
-  geom_text_repel(data = full_df |>
+  geom_label_repel(data = full_df |>
                     filter(dge == "Under"),
                   aes(label = gene),
                   #nudge_x = 1,
@@ -251,6 +278,7 @@ scatter_plot <- full_df |>
                   max.overlaps = 10) +
   xlim(0, 2) +
   facet_wrap(~tissue, ncol = 4) +
+  theme_prism() +
   theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
   labs(title = "Significant DGE on different tissues")
 ```
